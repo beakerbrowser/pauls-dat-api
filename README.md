@@ -51,7 +51,7 @@ var entry = await pda.lookupEntry(archive, entry => entry.name === '/dat.json')
 var manifestStr = await pda.readFile(archive, '/dat.json')
 var imageBase64 = await pda.readFile(archive, '/favicon.png', 'base64')
 
-## listFiles(archive, path[, cb])
+### listFiles(archive, path[, cb])
 
  - `archive` Hyperdrive archive (object).
  - `path` Target directory path (string).
@@ -65,7 +65,7 @@ console.log(listing) /* => {
 }*/
 ```
 
-## writeFile(archive, name, data[, opts, cb])
+### writeFile(archive, name, data[, opts, cb])
 
  - `archive` Hyperdrive archive (object).
  - `name` Entry path (string).
@@ -78,7 +78,7 @@ await pda.writeFile(archive, '/hello.txt', 'world', 'utf8')
 await pda.writeFile(archive, '/profile.png', fs.readFileSync('/tmp/dog.png'))
 ```
 
-## createDirectory(archive, name[, cb])
+### createDirectory(archive, name[, cb])
 
  - `archive` Hyperdrive archive (object).
  - `name` Directory path (string).
@@ -87,7 +87,7 @@ await pda.writeFile(archive, '/profile.png', fs.readFileSync('/tmp/dog.png'))
 await pda.createDirectory(archive, '/stuff')
 ```
 
-## readManifest(archive[, cb])
+### readManifest(archive[, cb])
 
  - `archive` Hyperdrive archive (object).
 
@@ -97,7 +97,7 @@ A sugar to get the manifest object.
 var manifestObj = await pda.readManifest(archive)
 ```
 
-## generateManifest(opts)
+### generateManifest(opts)
 
  - `opts` Manifest options (object).
 
