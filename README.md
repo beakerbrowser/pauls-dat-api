@@ -51,16 +51,6 @@ var entry = await pda.lookupEntry(archive, entry => entry.name === '/dat.json')
 var manifestStr = await pda.readFile(archive, '/dat.json')
 var imageBase64 = await pda.readFile(archive, '/favicon.png', 'base64')
 
-## readManifest(archive[, cb])
-
- - `archive` Hyperdrive archive (object).
-
-A sugar to get the manifest object.
-
-```js
-var manifestObj = await pda.readManifest(archive)
-```
-
 ## listFiles(archive, path[, cb])
 
  - `archive` Hyperdrive archive (object).
@@ -96,3 +86,33 @@ await pda.writeFile(archive, '/profile.png', fs.readFileSync('/tmp/dog.png'))
 ```js
 await pda.createDirectory(archive, '/stuff')
 ```
+
+## readManifest(archive[, cb])
+
+ - `archive` Hyperdrive archive (object).
+
+A sugar to get the manifest object.
+
+```js
+var manifestObj = await pda.readManifest(archive)
+```
+
+## generateManifest(opts)
+
+ - `opts` Manifest options (object).
+
+Helper to generate a manifest object. Opts in detail:
+
+```
+{
+  url: String, the dat's url
+  title: String
+  description: String
+  author: String
+  version: String
+  forkOf: String, the forked-from dat's url
+  createdBy: String, the url of the app that created the dat
+}
+```
+
+See: https://github.com/datprotocol/dat.json
