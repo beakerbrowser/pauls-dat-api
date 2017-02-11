@@ -50,6 +50,7 @@ var entry = await pda.lookupEntry(archive, entry => entry.name === '/dat.json')
 ```js
 var manifestStr = await pda.readFile(archive, '/dat.json')
 var imageBase64 = await pda.readFile(archive, '/favicon.png', 'base64')
+```
 
 ### listFiles(archive, path[, cb])
 
