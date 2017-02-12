@@ -6,6 +6,8 @@ These functions were factored out of [beaker browser](https://github.com/beakerb
 
 All async methods work with callbacks and promises. If no callback is provided, a promise will be returned.
 
+Any time a hyperdrive `archive` is expected, a [dat-node](https://github.com/datproject/dat-node) instance can be used.
+
 ## API
 
 ```js
