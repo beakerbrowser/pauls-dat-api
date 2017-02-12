@@ -115,6 +115,29 @@ A sugar to get the manifest object.
 var manifestObj = await pda.readManifest(archive)
 ```
 
+### writeManifest(archive, manifest[, cb])
+
+ - `archive` Hyperdrive archive (object).
+ - `manifest` Manifest values (object).
+
+A sugar to write the manifest object.
+
+```js
+await pda.writeManifest(archive, { title: 'My dat!' })
+```
+
+### updateManifest(archive, manifest[, cb])
+
+ - `archive` Hyperdrive archive (object).
+ - `manifest` Manifest values (object).
+
+A sugar to modify the manifest object.
+
+```js
+await pda.writeManifest(archive, { title: 'My dat!', description: 'the desc' })
+await pda.writeManifest(archive, { title: 'My new title!' }) // preserves description
+```
+
 ### generateManifest(opts)
 
  - `opts` Manifest options (object).
