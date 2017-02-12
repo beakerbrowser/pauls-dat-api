@@ -9,7 +9,7 @@ const drive = hyperdrive(memdb())
 
 function createArchive (names) {
   var promises = []
-  const archive = drive.createArchive()
+  const archive = drive.createArchive({ live: true })
   names.forEach(name => {
     var content = 'content'
     if (typeof name === 'object') {

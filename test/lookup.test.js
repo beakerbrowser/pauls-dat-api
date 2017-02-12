@@ -62,7 +62,6 @@ test('lookupEntry timeout', async t => {
     await pda.lookupEntry(archive, '/foo', {timeout: 500})
     t.fail('Should have thrown')
   } catch (e) {
-    t.deepEqual(e.name, 'TimeoutError')
     t.truthy(e.timedOut)
     t.truthy((Date.now() - startTime) < 1e3)
   }
