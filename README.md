@@ -29,7 +29,8 @@ pda.normalizeEntryName({ name: 'foo/bar' })
  - `archive` Hyperdrive archive (object).
  - `name` Entry name (string).
  - `fn` Entry predicate (function (entry) => boolean).
- - Returns a Hyperdrive entry (object).
+ - Returns a Hyperdrive entry (object). 
+ - Does not throw. Returns null on not found.
 
 ```js
 // by name:
@@ -46,6 +47,7 @@ var entry = await pda.lookupEntry(archive, entry => entry.name === '/dat.json')
  - `opts`. Options (object|string). If a string, will act as `opts.encoding`.
  - `opts.encoding` Desired output encoding (string). May be 'binary', 'utf8', 'hex', or 'base64'. Default 'utf8'.
  - Returns the content of the file in the requested encoding.
+ - Throws NotFoundError and NotAFileError.
 
 ```js
 var manifestStr = await pda.readFile(archive, '/dat.json')
@@ -57,6 +59,7 @@ var imageBase64 = await pda.readFile(archive, '/favicon.png', 'base64')
  - `archive` Hyperdrive archive (object).
  - `path` Target directory path (string).
  - Returns an map representing the entries in the directory (object).
+ - Does not throw. Returns an empty object on bad path.
 
 ```js
 var listing = await pda.listFiles(archive, '/assets')
@@ -73,6 +76,7 @@ console.log(listing) /* => {
  - `data` Data to write (string|Buffer).
  - `opts`. Options (object|string). If a string, will act as `opts.encoding`.
  - `opts.encoding` Desired file encoding (string). May be 'binary', 'utf8', 'hex', or 'base64'. Default 'utf8' if `data` is a string, 'binary' if `data` is a Buffer.
+ - Throws InvalidEncodingError.
 
 ```js
 await pda.writeFile(archive, '/hello.txt', 'world', 'utf8')
