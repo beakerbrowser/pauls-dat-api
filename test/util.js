@@ -1,6 +1,7 @@
 const hyperdrive = require('hyperdrive')
 const memdb = require('memdb')
 
+const FAKE_DAT_KEY = 'f'.repeat(64)
 const drive = hyperdrive(memdb())
 
 function createArchive (names) {
@@ -23,4 +24,4 @@ function createArchive (names) {
   return Promise.all(promises).then(() => archive)
 }
 
-module.exports = {createArchive}
+module.exports = {FAKE_DAT_KEY, drive, createArchive}

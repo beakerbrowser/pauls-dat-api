@@ -24,13 +24,17 @@ pda.normalizeEntryName({ name: 'foo/bar' })
 // => '/foo/bar'
 ```
 
-### lookupEntry(archive, name|fn[, cb])
+### lookupEntry(archive, name|fn[, opts, cb])
 
  - `archive` Hyperdrive archive (object).
  - `name` Entry name (string).
  - `fn` Entry predicate (function (entry) => boolean).
+ - `opts.timeout` How long until readFile gives up (number in ms). Defaults to 5000ms.
  - Returns a Hyperdrive entry (object). 
  - Does not throw. Returns null on not found.
+
+This method will wait for archive metadata to finish downloading before responding.
+The timeout will keep you from waiting indefinitely.
 
 ```js
 // by name:
@@ -46,12 +50,19 @@ var entry = await pda.lookupEntry(archive, entry => entry.name === '/dat.json')
  - `name` Entry path (string).
  - `opts`. Options (object|string). If a string, will act as `opts.encoding`.
  - `opts.encoding` Desired output encoding (string). May be 'binary', 'utf8', 'hex', or 'base64'. Default 'utf8'.
+ - `opts.timeout` How long until readFile gives up (number in ms). Defaults to 5000ms.
  - Returns the content of the file in the requested encoding.
- - Throws NotFoundError and NotAFileError.
+ - Throws NotFoundError, NotAFileError, and TimeoutError.
+
+This method will wait for archive content to finish downloading before responding.
+The timeout will keep you from waiting indefinitely.
 
 ```js
 var manifestStr = await pda.readFile(archive, '/dat.json')
 var imageBase64 = await pda.readFile(archive, '/favicon.png', 'base64')
+
+// wait for a day
+var imageBase64 = await pda.readFile(archive, '/dat.json', {timeout: 86400000})
 ```
 
 ### listFiles(archive, path[, cb])

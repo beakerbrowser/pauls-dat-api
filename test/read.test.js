@@ -35,6 +35,24 @@ test('readFile encodings', async t => {
   await t.deepEqual(await pda.readFile(archive, 'buf', 'base64'), 'AAECAw==')
 })
 
+test('readFile timeout', async t => {
+  var archive = tutil.drive.createArchive(tutil.FAKE_DAT_KEY, { live: true })
+
+  // archive is now an empty, non-owned archive that hyperdrive needs data for
+  // hyperdrive will defer read calls based on the expectation that data will arrive soon
+  // since the data will never come, this is a good opportunity for us to test the readFile timeout
+
+  var startTime = Date.now()
+  try {
+    await pda.readFile(archive, '/foo', {timeout: 500})
+    t.fail('Should have thrown')
+  } catch (e) {
+    t.deepEqual(e.name, 'TimeoutError')
+    t.truthy(e.timedOut)
+    t.truthy((Date.now() - startTime) < 1e3)
+  }
+})
+
 test('listFiles', async t => {
   var archive = await tutil.createArchive([
     'foo',
