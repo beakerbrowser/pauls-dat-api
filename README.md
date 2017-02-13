@@ -12,40 +12,33 @@ Any time a hyperdrive `archive` is expected, a [dat-node](https://github.com/dat
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
-- [API](#api)
-  - [normalizeEntryName(entry)](#normalizeentrynameentry)
+- [Lookup](#lookup)
   - [lookupEntry(archive, name|fn[, opts, cb])](#lookupentryarchive-namefn-opts-cb)
+- [Read](#read)
   - [readFile(archive, name[, opts, cb])](#readfilearchive-name-opts-cb)
   - [listFiles(archive, path[, cb])](#listfilesarchive-path-cb)
+- [Write](#write)
   - [writeFile(archive, name, data[, opts, cb])](#writefilearchive-name-data-opts-cb)
   - [createDirectory(archive, name[, cb])](#createdirectoryarchive-name-cb)
+- [Exporters](#exporters)
   - [exportFilesystemToArchive(opts[, cb])](#exportfilesystemtoarchiveopts-cb)
   - [exportArchiveToFilesystem(opts[, cb])](#exportarchivetofilesystemopts-cb)
   - [exportArchiveToArchive(opts[, cb])](#exportarchivetoarchiveopts-cb)
+- [Manifest](#manifest)
   - [readManifest(archive[, cb])](#readmanifestarchive-cb)
   - [writeManifest(archive, manifest[, cb])](#writemanifestarchive-manifest-cb)
   - [updateManifest(archive, manifest[, cb])](#updatemanifestarchive-manifest-cb)
   - [generateManifest(opts)](#generatemanifestopts)
+- [Helpers](#helpers)
+  - [normalizeEntryName(entry)](#normalizeentrynameentry)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-## API
 
 ```js
 const pda = require('pauls-dat-api')
 ```
 
-### normalizeEntryName(entry)
-
- - `entry` Hyperdrive entry (object).
- - Returns a normalized name (string).
-
-Dat is agnostic about whether entry names have a preceding slash. This method enforces a preceding slash.
-
-```js
-pda.normalizeEntryName({ name: 'foo/bar' })
-// => '/foo/bar'
-```
+## Lookup
 
 ### lookupEntry(archive, name|fn[, opts, cb])
 
@@ -66,6 +59,8 @@ var entry = await pda.lookupEntry(archive, '/dat.json')
 // by a predicate:
 var entry = await pda.lookupEntry(archive, entry => entry.name === '/dat.json')
 ```
+
+## Read
 
 ### readFile(archive, name[, opts, cb])
 
@@ -103,6 +98,8 @@ console.log(listing) /* => {
 }*/
 ```
 
+## Write
+
 ### writeFile(archive, name, data[, opts, cb])
 
  - `archive` Hyperdrive archive (object).
@@ -125,6 +122,8 @@ await pda.writeFile(archive, '/profile.png', fs.readFileSync('/tmp/dog.png'))
 ```js
 await pda.createDirectory(archive, '/stuff')
 ```
+
+## Exporters
 
 ### exportFilesystemToArchive(opts[, cb])
 
@@ -209,6 +208,8 @@ await pda.exportArchiveToArchive({
 })
 ```
 
+## Manifest
+
 ### readManifest(archive[, cb])
 
  - `archive` Hyperdrive archive (object).
@@ -261,3 +262,17 @@ Helper to generate a manifest object. Opts in detail:
 ```
 
 See: https://github.com/datprotocol/dat.json
+
+## Helpers
+
+### normalizeEntryName(entry)
+
+ - `entry` Hyperdrive entry (object).
+ - Returns a normalized name (string).
+
+Dat is agnostic about whether entry names have a preceding slash. This method enforces a preceding slash.
+
+```js
+pda.normalizeEntryName({ name: 'foo/bar' })
+// => '/foo/bar'
+```
