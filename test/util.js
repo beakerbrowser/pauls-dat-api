@@ -8,6 +8,7 @@ const FAKE_DAT_KEY = 'f'.repeat(64)
 const drive = hyperdrive(memdb())
 
 function createArchive (names) {
+  names = names || []
   var promises = []
   const archive = drive.createArchive({ live: true })
   names.forEach(name => {
@@ -24,10 +25,13 @@ function createArchive (names) {
       ws.once('finish', resolve)
     }))
   })
+  if (!promises.length) {
+    return new Promise(resolve => archive.open(() => resolve(archive)))
+  }
   return Promise.all(promises).then(() => archive)
 }
 
-function tmpdir () {
+function tmpdir (names) {
   return fs.mkdtempSync(os.tmpdir() + path.sep + 'pauls-dat-api-test-')
 }
 

@@ -4,5 +4,6 @@ module.exports = Object.assign({},
   require('./lib/lookup'),
   require('./lib/read'),
   require('./lib/write'),
-  require('./lib/manifest')
+  require('./lib/manifest'),
+  require('./lib/export')
 )

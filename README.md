@@ -105,6 +105,89 @@ await pda.writeFile(archive, '/profile.png', fs.readFileSync('/tmp/dog.png'))
 await pda.createDirectory(archive, '/stuff')
 ```
 
+### exportFilesystemToArchive(opts[, cb])
+
+ - `opts.srcPath` Source path in the filesystem (string). Required.
+ - `opts.dstArchive` Destination archive (object). Required.
+ - `opts.dstPath` Destination path within the archive. Optional, defaults to '/'.
+ - `opts.ignore` Files not to copy (array of strings). Optional. Uses [anymatch](npm.im/anymatch).
+ - `opts.inplaceImport` Should import source directory in-place? (boolean). If true and importing a directory, this will cause the directory's content to be copied directy into the `dstPath`. If false, will cause the source-directory to become a child of the `dstPath`.
+ - `opts.dryRun` Don't actually copy (boolean). If true, will run all export logic without actually modifying the target archive.
+ - Returns stats on the export.
+
+Copies a file-tree into an archive.
+
+The `dryRun` opt is useful because this method compares the source files to the destination before copying. Therefore the stats returned by a dry run gives you a file-level diff.
+
+```js
+var stats = await pda.exportFilesystemToArchive({
+  srcPath: '/tmp/mystuff',
+  dstArchive: archive,
+  inplaceImport: true
+})
+console.log(stats) /* => {
+  addedFiles: ['fuzz.txt', 'foo/bar.txt'],
+  updatedFiles: ['something.txt'],
+  skipCount: 3, // files skipped due to the target already existing
+  fileCount: 3,
+  totalSize: 400 // bytes
+}*/
+```
+
+### exportArchiveToFilesystem(opts[, cb])
+
+ - `opts.srcArchive` Source archive (object). Required.
+ - `opts.dstPath` Destination path in the filesystem (string). Required.
+ - `opts.srcPath` Source path within the archive. Optional, defaults to '/'.
+ - `opts.ignore` Files not to copy (array of strings). Optional. Uses [anymatch](npm.im/anymatch).
+ - `opts.overwriteExisting` Proceed if the destination isn't empty (boolean). Default false.
+ - `opts.skipUndownloadedFiles` Ignore files that haven't been downloaded yet (boolean). Default false. If false, will wait for source files to download.
+ - Returns stats on the export.
+
+Copies an archive into the filesystem.
+
+NOTE
+
+ - Unlike exportFilesystemToArchive, this will not compare the target for equality before copying. If `overwriteExisting` is true, it will simply copy all files again.
+
+```js
+var stats = await pda.exportArchiveToFilesystem({
+  srcArchive: archive,
+  dstPath: '/tmp/mystuff',
+  skipUndownloadedFiles: true
+})
+console.log(stats) /* => {
+  addedFiles: ['fuzz.txt', 'foo/bar.txt'],
+  updatedFiles: ['something.txt'],
+  fileCount: 3,
+  totalSize: 400 // bytes
+}*/
+```
+
+### exportArchiveToArchive(opts[, cb])
+
+ - `opts.srcArchive` Source archive (object). Required.
+ - `opts.dstArchive` Destination archive (object). Required.
+ - `opts.srcPath` Source path within the source archive (string). Optional, defaults to '/'.
+ - `opts.dstPath` Destination path within the destination archive (string). Optional, defaults to '/'.
+ - `opts.ignore` Files not to copy (array of strings). Optional. Uses [anymatch](npm.im/anymatch).
+ - `opts.skipUndownloadedFiles` Ignore files that haven't been downloaded yet (boolean). Default false. If false, will wait for source files to download.
+
+Copies an archive into another archive.
+
+NOTE
+
+ - Unlike exportFilesystemToArchive, this will not compare the target for equality before copying. It copies files indescriminately.
+ - This method also does not yet track stats.
+
+```js
+await pda.exportArchiveToArchive({
+  srcArchive: archiveA,
+  dstArchive: archiveB,
+  skipUndownloadedFiles: true
+})
+```
+
 ### readManifest(archive[, cb])
 
  - `archive` Hyperdrive archive (object).
