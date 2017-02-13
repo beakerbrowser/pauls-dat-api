@@ -8,6 +8,27 @@ All async methods work with callbacks and promises. If no callback is provided, 
 
 Any time a hyperdrive `archive` is expected, a [dat-node](https://github.com/datproject/dat-node) instance can be used.
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+
+- [API](#api)
+  - [normalizeEntryName(entry)](#normalizeentrynameentry)
+  - [lookupEntry(archive, name|fn[, opts, cb])](#lookupentryarchive-namefn-opts-cb)
+  - [readFile(archive, name[, opts, cb])](#readfilearchive-name-opts-cb)
+  - [listFiles(archive, path[, cb])](#listfilesarchive-path-cb)
+  - [writeFile(archive, name, data[, opts, cb])](#writefilearchive-name-data-opts-cb)
+  - [createDirectory(archive, name[, cb])](#createdirectoryarchive-name-cb)
+  - [exportFilesystemToArchive(opts[, cb])](#exportfilesystemtoarchiveopts-cb)
+  - [exportArchiveToFilesystem(opts[, cb])](#exportarchivetofilesystemopts-cb)
+  - [exportArchiveToArchive(opts[, cb])](#exportarchivetoarchiveopts-cb)
+  - [readManifest(archive[, cb])](#readmanifestarchive-cb)
+  - [writeManifest(archive, manifest[, cb])](#writemanifestarchive-manifest-cb)
+  - [updateManifest(archive, manifest[, cb])](#updatemanifestarchive-manifest-cb)
+  - [generateManifest(opts)](#generatemanifestopts)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## API
 
 ```js
