@@ -123,6 +123,26 @@ await pda.writeFile(archive, '/profile.png', fs.readFileSync('/tmp/dog.png'))
 await pda.createDirectory(archive, '/stuff')
 ```
 
+## Network
+
+### download(archive, name[, opts, cb])
+
+ - `archive` Hyperdrive archive (object).
+ - `name` Entry path (string). Can point to a file or folder.
+ - `opts.timeout` How long until download throws a timeout error (number in ms). Optional. Note, Dat will continue trying to download the file in the background after timeout.
+ - `opts.priority` How important is the download (number in 1-5). When picking the next file to download, a priority: 5 will happen before a priority: 4, etc.
+
+Download an archive file or folder-tree.
+
+```js
+// download a specific file:
+await pda.download(archive, '/foo.txt')
+// download a specific folder and all children:
+await pda.download(archive, '/bar/')
+// download the entire archive:
+await pda.download(archive, '/')
+```
+
 ## Exporters
 
 ### exportFilesystemToArchive(opts[, cb])

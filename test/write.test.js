@@ -58,9 +58,6 @@ test('ArchiveNotWritableError', async t => {
 test('InvalidPathError', async t => {
   var archive = await tutil.createArchive([])
 
-  const err1 = await t.throws(pda.writeFile(archive, '/foo/', 'new content'))
-  t.truthy(err1.invalidPath)
-
   const err2 = await t.throws(pda.writeFile(archive, '/foo%20bar', 'new content'))
   t.truthy(err2.invalidPath)
 

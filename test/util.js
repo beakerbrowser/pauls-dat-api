@@ -10,6 +10,7 @@ const drive = hyperdrive(memdb())
 function createArchive (names) {
   names = names || []
   var promises = []
+  const drive = hyperdrive(memdb())
   const archive = drive.createArchive({ live: true })
   names.forEach(name => {
     var content = 'content'
@@ -19,10 +20,17 @@ function createArchive (names) {
     }
 
     promises.push(new Promise(resolve => {
-      const ws = archive.createFileWriteStream(name)
-      ws.write(content)
-      ws.end()
-      ws.once('finish', resolve)
+      if (name.slice(-1) === '/') {
+        archive.append({
+          name,
+          type: 'directory'
+        }, resolve)
+      } else {
+        const ws = archive.createFileWriteStream(name)
+        ws.write(content)
+        ws.end()
+        ws.once('finish', resolve)
+      }
     }))
   })
   if (!promises.length) {
