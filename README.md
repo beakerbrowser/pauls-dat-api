@@ -20,6 +20,8 @@ Any time a hyperdrive `archive` is expected, a [dat-node](https://github.com/dat
 - [Write](#write)
   - [writeFile(archive, name, data[, opts, cb])](#writefilearchive-name-data-opts-cb)
   - [createDirectory(archive, name[, cb])](#createdirectoryarchive-name-cb)
+- [Network](#network)
+  - [download(archive, name[, opts, cb])](#downloadarchive-name-opts-cb)
 - [Exporters](#exporters)
   - [exportFilesystemToArchive(opts[, cb])](#exportfilesystemtoarchiveopts-cb)
   - [exportArchiveToFilesystem(opts[, cb])](#exportarchivetofilesystemopts-cb)
