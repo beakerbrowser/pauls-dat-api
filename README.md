@@ -145,6 +145,48 @@ await pda.download(archive, '/bar/')
 await pda.download(archive, '/')
 ```
 
+## Activity Streams
+
+### createFileActivityStream(archive[, path])
+
+ - `archive` Hyperdrive archive (object).
+ - `path` Entry path (string) or [anymatch](npm.im/anymatch) pattern (array of strings). If falsy, will watch all files.
+ - Returns a Readable stream.
+
+Watches the given path or path-pattern for events, which it emits as an [emit-stream](https://github.com/substack/emit-stream). Supported events:
+
+ - `['changed',{path}]` - The contents of the file has changed, either by a local write or a remote write. The new content will be ready when this event is emitted. `path` is the path-string of the file.
+ - `['invalidated',{path}]` - The contents of the file has changed remotely, but hasn't been downloaded yet. `path` is the path-string of the file.
+
+An archive will emit "invalidated" first, when it receives the new metadata for the file. It will then emit "changed" when the content arrives. (A local archive will not emit "invalidated.")
+
+```js
+var es = pda.createFileActivityStream(archive)
+var es = pda.createFileActivityStream(archive, 'foo.txt')
+var es = pda.createFileActivityStream(archive, ['**/*.txt', '**/*.md'])
+
+es.on('data', ([event, args]) => {
+  if (event === 'invalidated') {
+    console.log(args.path, 'has been invalidated')
+    pda.download(archive, args.path)
+  } else if (event === 'changed') {
+    console.log(args.path, 'has changed')
+  }
+})
+
+// alternatively, via emit-stream:
+
+var emitStream = require('emit-stream')
+var events = emitStream(es)
+events.on('invalidated', args => {
+  console.log(args.path, 'has been invalidated')
+  pda.download(archive, args.path)  
+})
+events.on('changed', args => {
+  console.log(args.path, 'has changed')
+})
+```
+
 ## Exporters
 
 ### exportFilesystemToArchive(opts[, cb])
