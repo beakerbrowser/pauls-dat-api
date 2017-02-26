@@ -22,6 +22,9 @@ Any time a hyperdrive `archive` is expected, a [dat-node](https://github.com/dat
   - [createDirectory(archive, name[, cb])](#createdirectoryarchive-name-cb)
 - [Network](#network)
   - [download(archive, name[, opts, cb])](#downloadarchive-name-opts-cb)
+- [Activity Streams](#activity-streams)
+  - [createFileActivityStream(archive[, path])](#createfileactivitystreamarchive-path)
+  - [createNetworkActivityStream(archive)](#createnetworkactivitystreamarchive)
 - [Exporters](#exporters)
   - [exportFilesystemToArchive(opts[, cb])](#exportfilesystemtoarchiveopts-cb)
   - [exportArchiveToFilesystem(opts[, cb])](#exportarchivetofilesystemopts-cb)
@@ -143,6 +146,95 @@ await pda.download(archive, '/foo.txt')
 await pda.download(archive, '/bar/')
 // download the entire archive:
 await pda.download(archive, '/')
+```
+
+## Activity Streams
+
+### createFileActivityStream(archive[, path])
+
+ - `archive` Hyperdrive archive (object).
+ - `path` Entry path (string) or [anymatch](npm.im/anymatch) pattern (array of strings). If falsy, will watch all files.
+ - Returns a Readable stream.
+
+Watches the given path or path-pattern for file events, which it emits as an [emit-stream](https://github.com/substack/emit-stream). Supported events:
+
+ - `['changed',{path}]` - The contents of the file has changed, either by a local write or a remote write. The new content will be ready when this event is emitted. `path` is the path-string of the file.
+ - `['invalidated',{path}]` - The contents of the file has changed remotely, but hasn't been downloaded yet. `path` is the path-string of the file.
+
+An archive will emit "invalidated" first, when it receives the new metadata for the file. It will then emit "changed" when the content arrives. (A local archive will not emit "invalidated.")
+
+```js
+var es = pda.createFileActivityStream(archive)
+var es = pda.createFileActivityStream(archive, 'foo.txt')
+var es = pda.createFileActivityStream(archive, ['**/*.txt', '**/*.md'])
+
+es.on('data', ([event, args]) => {
+  if (event === 'invalidated') {
+    console.log(args.path, 'has been invalidated')
+    pda.download(archive, args.path)
+  } else if (event === 'changed') {
+    console.log(args.path, 'has changed')
+  }
+})
+
+// alternatively, via emit-stream:
+
+var emitStream = require('emit-stream')
+var events = emitStream(es)
+events.on('invalidated', args => {
+  console.log(args.path, 'has been invalidated')
+  pda.download(archive, args.path)  
+})
+events.on('changed', args => {
+  console.log(args.path, 'has changed')
+})
+```
+
+### createNetworkActivityStream(archive)
+
+ - `archive` Hyperdrive archive (object).
+ - Returns a Readable stream.
+
+Watches the archive for network events, which it emits as an [emit-stream](https://github.com/substack/emit-stream). Supported events:
+
+ - `['network-changed',{connections}]` - The number of connections has changed. `connections` is a number.
+ - `['download',{feed,block,bytes}]` - A block has been downloaded. `feed` will either be "metadata" or "content". `block` is the index of data downloaded. `bytes` is the number of bytes in the block.
+ - `['upload',{feed,block,bytes}]` - A block has been uploaded. `feed` will either be "metadata" or "content". `block` is the index of data downloaded. `bytes` is the number of bytes in the block.
+ - `['download-complete',{feed}]` - A feed has finished downloading all of its blocks. `feed` will either be "metadata" or "content".
+
+Note that if a feed is in sparse-mode, 'download-complete' may never emit.
+
+```js
+var es = pda.createNetworkActivityStream(archive)
+
+es.on('data', ([event, args]) => {
+  if (event === 'network-changed') {
+    console.log('Connected to %d peers', args.connections)
+  } else if (event === 'download') {
+    console.log('Just downloaded %d bytes (block %d) of the %s feed', args.bytes, args.block, args.feed)
+  } else if (event === 'upload') {
+    console.log('Just uploaded %d bytes (block %d) of the %s feed', args.bytes, args.block, args.feed)
+  } else if (event === 'download-finished') {
+    console.log('Finished downloading the %s feed', args.feed)
+  }
+})
+
+// alternatively, via emit-stream:
+
+var emitStream = require('emit-stream')
+var events = emitStream(es)
+events.on('network-changed', args => {
+  console.log('Connected to %d peers', args.connections)
+})
+events.on('download', args => {
+  console.log('Just downloaded %d bytes (block %d) of the %s feed', args.bytes, args.block, args.feed)
+})
+events.on('upload', args => {
+  console.log('Just uploaded %d bytes (block %d) of the %s feed', args.bytes, args.block, args.feed)
+})
+events.on('download-finished', args => {
+  console.log('Finished downloading the %s feed', args.feed)
+})
 ```
 
 ## Exporters

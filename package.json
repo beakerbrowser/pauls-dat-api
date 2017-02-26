@@ -28,6 +28,7 @@
     "co": "^4.6.0",
     "concat-stream": "^1.6.0",
     "dat-encoding": "^4.0.2",
+    "emit-stream": "^0.1.2",
     "from2-encoding": "^1.0.0",
     "fs-promise": "^2.0.0",
     "hyperdrive-import-files": "^2.9.0",
