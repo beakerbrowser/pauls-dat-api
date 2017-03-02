@@ -88,10 +88,11 @@ var imageBase64 = await pda.readFile(archive, '/favicon.png', 'base64')
 var imageBase64 = await pda.readFile(archive, '/dat.json', {timeout: 86400000})
 ```
 
-### listFiles(archive, path[, cb])
+### listFiles(archive, path[, opts, cb])
 
  - `archive` Hyperdrive archive (object).
  - `path` Target directory path (string).
+ - `opts.depth` How many folders deep should it recurse to (number). Defaults to 1. If false, will list all folders.
  - Returns an map representing the entries in the directory (object).
  - Does not throw. Returns an empty object on bad path.
 
@@ -100,6 +101,13 @@ var listing = await pda.listFiles(archive, '/assets')
 console.log(listing) /* => {
   'profile.png': { type: 'file', name: '/assets/profile.png', ... },
   'styles.css': { type: 'file', name: '/assets/styles.css', ... }  
+}*/
+
+var listing = await pda.listFiles(archive, '/', { depth: 2 })
+console.log(listing) /* => {
+  'index.html': { type: 'file', name: '/index.html', ... },
+  'assets/profile.png': { type: 'file', name: '/assets/profile.png', ... },
+  'assets/styles.css': { type: 'file', name: '/assets/styles.css', ... }  
 }*/
 ```
 

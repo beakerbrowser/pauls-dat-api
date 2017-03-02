@@ -65,3 +65,20 @@ test('listFiles', async t => {
   t.deepEqual(Object.keys(await pda.listFiles(archive, '/foo')), ['bar'])
   t.deepEqual(Object.keys(await pda.listFiles(archive, '/foo/')), ['bar'])
 })
+
+test('listFiles depth=n', async t => {
+  var archive = await tutil.createArchive([
+    'foo',
+    'foo/bar',
+    'foo/bar/baz',
+    'baz'
+  ])
+
+  t.deepEqual(Object.keys(await pda.listFiles(archive, '', {depth: 2})), ['foo', 'foo/bar', 'baz'])
+  t.deepEqual(Object.keys(await pda.listFiles(archive, '/', {depth: 2})), ['foo', 'foo/bar', 'baz'])
+  t.deepEqual(Object.keys(await pda.listFiles(archive, 'foo', {depth: 2})), ['bar', 'bar/baz'])
+  t.deepEqual(Object.keys(await pda.listFiles(archive, '/foo', {depth: 2})), ['bar', 'bar/baz'])
+  t.deepEqual(Object.keys(await pda.listFiles(archive, '/foo/', {depth: 2})), ['bar', 'bar/baz'])
+  t.deepEqual(Object.keys(await pda.listFiles(archive, '/', {depth: 3})), ['foo', 'foo/bar', 'foo/bar/baz', 'baz'])
+  t.deepEqual(Object.keys(await pda.listFiles(archive, '/', {depth: false})), ['foo', 'foo/bar', 'foo/bar/baz', 'baz'])
+})
