@@ -71,14 +71,15 @@ test('listFiles depth=n', async t => {
     'foo',
     'foo/bar',
     'foo/bar/baz',
-    'baz'
+    'baz',
+    'one/two/three/four'
   ])
 
-  t.deepEqual(Object.keys(await pda.listFiles(archive, '', {depth: 2})), ['foo', 'foo/bar', 'baz'])
-  t.deepEqual(Object.keys(await pda.listFiles(archive, '/', {depth: 2})), ['foo', 'foo/bar', 'baz'])
+  t.deepEqual(Object.keys(await pda.listFiles(archive, '', {depth: 2})), ['foo', 'foo/bar', 'baz', 'one', 'one/two'])
+  t.deepEqual(Object.keys(await pda.listFiles(archive, '/', {depth: 2})), ['foo', 'foo/bar', 'baz', 'one', 'one/two'])
   t.deepEqual(Object.keys(await pda.listFiles(archive, 'foo', {depth: 2})), ['bar', 'bar/baz'])
   t.deepEqual(Object.keys(await pda.listFiles(archive, '/foo', {depth: 2})), ['bar', 'bar/baz'])
   t.deepEqual(Object.keys(await pda.listFiles(archive, '/foo/', {depth: 2})), ['bar', 'bar/baz'])
-  t.deepEqual(Object.keys(await pda.listFiles(archive, '/', {depth: 3})), ['foo', 'foo/bar', 'foo/bar/baz', 'baz'])
-  t.deepEqual(Object.keys(await pda.listFiles(archive, '/', {depth: false})), ['foo', 'foo/bar', 'foo/bar/baz', 'baz'])
+  t.deepEqual(Object.keys(await pda.listFiles(archive, '/', {depth: 3})), ['foo', 'foo/bar', 'foo/bar/baz', 'baz', 'one', 'one/two', 'one/two/three'])
+  t.deepEqual(Object.keys(await pda.listFiles(archive, '/', {depth: false})), ['foo', 'foo/bar', 'foo/bar/baz', 'baz', 'one', 'one/two', 'one/two/three', 'one/two/three/four'])
 })
