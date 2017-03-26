@@ -83,3 +83,20 @@ test('listFiles depth=n', async t => {
   t.deepEqual(Object.keys(await pda.listFiles(archive, '/', {depth: 3})), ['foo', 'foo/bar', 'foo/bar/baz', 'baz', 'one', 'one/two', 'one/two/three'])
   t.deepEqual(Object.keys(await pda.listFiles(archive, '/', {depth: false})), ['foo', 'foo/bar', 'foo/bar/baz', 'baz', 'one', 'one/two', 'one/two/three', 'one/two/three/four'])
 })
+
+test('listFiles timeout', async t => {
+  var archive = tutil.drive.createArchive(tutil.FAKE_DAT_KEY, { live: true })
+
+  // archive is now an empty, non-owned archive that hyperdrive needs data for
+  // hyperdrive will defer read calls based on the expectation that data will arrive soon
+  // since the data will never come, this is a good opportunity for us to test the readFile timeout
+
+  var startTime = Date.now()
+  try {
+    await pda.listFiles(archive, '/', {timeout: 500})
+    t.fail('Should have thrown')
+  } catch (e) {
+    t.truthy(e.timedOut)
+    t.truthy((Date.now() - startTime) < 1e3)
+  }
+})

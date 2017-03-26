@@ -93,6 +93,7 @@ var imageBase64 = await pda.readFile(archive, '/dat.json', {timeout: 86400000})
  - `archive` Hyperdrive archive (object).
  - `path` Target directory path (string).
  - `opts.depth` How many folders deep should it recurse to (number). Defaults to 1. If false, will list all folders.
+ - `opts.timeout` How long until listFiles gives up (number in ms). Defaults to 5000ms.
  - Returns an map representing the entries in the directory (object).
  - Does not throw. Returns an empty object on bad path.
 
