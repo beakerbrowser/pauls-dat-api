@@ -1,6 +1,6 @@
 {
   "name": "pauls-dat-api",
-  "version": "1.2.3",
+  "version": "1.3.0",
   "description": "Library of functions that make working with dat / hyperdrive easier.",
   "main": "index.js",
   "scripts": {
