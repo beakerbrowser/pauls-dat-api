@@ -223,8 +223,6 @@ es.on('data', ([event, args]) => {
     console.log('Just downloaded %d bytes (block %d) of the %s feed', args.bytes, args.block, args.feed)
   } else if (event === 'upload') {
     console.log('Just uploaded %d bytes (block %d) of the %s feed', args.bytes, args.block, args.feed)
-  } else if (event === 'download-finished') {
-    console.log('Finished downloading the %s feed', args.feed)
   }
 })
 
@@ -240,9 +238,6 @@ events.on('download', args => {
 })
 events.on('upload', args => {
   console.log('Just uploaded %d bytes (block %d) of the %s feed', args.bytes, args.block, args.feed)
-})
-events.on('download-finished', args => {
-  console.log('Finished downloading the %s feed', args.feed)
 })
 ```
 

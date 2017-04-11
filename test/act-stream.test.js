@@ -176,32 +176,24 @@ test('createFileActivityStream remote non-sparse', async t => {
   await whenDone
 })
 
-// TODO
-/*
+
 test('createNetworkActivityStream', async t => {
   const src = await tutil.createArchive([
     'foo.txt',
     { name: 'bar.data', content: Buffer.from([0x00, 0x01]) },
     'bar.txt'
   ])
-
-  const drive2 = hyperdrive(memdb())
-  const dst = drive2.createArchive(src.key, {
-    live: true,
-    sparse: false
-  })
+  const dst = hyperdrive(tutil.tmpdir(), src.key, {sparse: false})
 
   var whenDone = new Promise(resolve => {
     var stream = pda.createNetworkActivityStream(dst)
     var gotPeer = false
     var stats = {
       metadata: {
-        down: 0,
-        all: false
+        down: 0
       },
       content: {
-        down: 0,
-        all: false
+        down: 0
       }
     }
     stream.on('data', ([event, args]) => {
@@ -213,16 +205,16 @@ test('createNetworkActivityStream', async t => {
         stats[args.feed].all = true
       }
       if (gotPeer && 
-        stats.metadata.down === 4 && stats.metadata.all &&
-        stats.content.down === 3 && stats.content.all) {
+        stats.metadata.down === 4 &&
+        stats.content.down === 3) {
         resolve()
       }
     })
   })
 
-  const srcRS = src.replicate()
-  const dstRS = dst.replicate()
+  const srcRS = src.replicate({live: true})
+  const dstRS = dst.replicate({live: true})
   srcRS.pipe(dstRS).pipe(srcRS)
 
   await whenDone
-})*/
+})
