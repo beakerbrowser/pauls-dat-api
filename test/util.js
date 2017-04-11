@@ -1,3 +1,4 @@
+const co = require('co')
 const hyperdrive = require('hyperdrive')
 const fs = require('fs')
 const os = require('os')
@@ -9,22 +10,24 @@ function createArchive (names) {
   names = names || []
   var promises = []
   const archive = hyperdrive(tmpdir())
-  names.forEach(name => {
-    var content = 'content'
-    if (typeof name === 'object') {
-      content = name.content
-      name = name.name
-    }
-
-    promises.push(new Promise(resolve => {
-      if (name.slice(-1) === '/') {
-        archive.mkdir(name, resolve)
-      } else {
-        archive.writeFile(name, content, resolve)
+  return co(function* () {
+    for (var i=0; i < names.length; i++) {
+      let name = names[i]
+      let content = 'content'
+      if (typeof name === 'object') {
+        content = name.content
+        name = name.name
       }
-    }))
-  })
-  return Promise.all(promises).then(() => archive)
+
+      yield new Promise(resolve => {
+        if (name.slice(-1) === '/') {
+          archive.mkdir(name, resolve)
+        } else {
+          archive.writeFile(name, content, resolve)
+        }
+      })
+    }
+  }).then(() => archive)
 }
 
 function tmpdir () {
