@@ -1,17 +1,14 @@
 const hyperdrive = require('hyperdrive')
-const memdb = require('memdb')
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
 
 const FAKE_DAT_KEY = 'f'.repeat(64)
-const drive = hyperdrive(memdb())
 
 function createArchive (names) {
   names = names || []
   var promises = []
-  const drive = hyperdrive(memdb())
-  const archive = drive.createArchive({ live: true })
+  const archive = hyperdrive(tmpdir())
   names.forEach(name => {
     var content = 'content'
     if (typeof name === 'object') {
@@ -21,26 +18,17 @@ function createArchive (names) {
 
     promises.push(new Promise(resolve => {
       if (name.slice(-1) === '/') {
-        archive.append({
-          name,
-          type: 'directory'
-        }, resolve)
+        archive.mkdir(name, resolve)
       } else {
-        const ws = archive.createFileWriteStream(name)
-        ws.write(content)
-        ws.end()
-        ws.once('finish', resolve)
+        archive.writeFile(name, content, resolve)
       }
     }))
   })
-  if (!promises.length) {
-    return new Promise(resolve => archive.open(() => resolve(archive)))
-  }
   return Promise.all(promises).then(() => archive)
 }
 
-function tmpdir (names) {
+function tmpdir () {
   return fs.mkdtempSync(os.tmpdir() + path.sep + 'pauls-dat-api-test-')
 }
 
-module.exports = {FAKE_DAT_KEY, drive, createArchive, tmpdir}
+module.exports = {FAKE_DAT_KEY, createArchive, tmpdir}

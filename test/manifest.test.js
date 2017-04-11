@@ -4,6 +4,7 @@ const pda = require('../index')
 
 test('read/write/update manifest', async t => {
   var archive = await tutil.createArchive([])
+  await new Promise(resolve => archive.ready(resolve))
 
   await pda.writeManifest(archive, {
     url: `dat://${tutil.FAKE_DAT_KEY}`,
