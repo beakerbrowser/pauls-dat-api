@@ -46,16 +46,12 @@ const pda = require('pauls-dat-api')
 
 ## Lookup
 
-### stat(archive, name[, opts, cb])
+### stat(archive, name[, cb])
 
  - `archive` Hyperdrive archive (object).
  - `name` Entry name (string).
- - `opts.timeout` How long until readFile gives up (number in ms). Defaults to 5000ms.
  - Returns a Hyperdrive Stat entry (object).
- - Throws TimeoutError, NotFoundError
-
-This method will wait for archive metadata to finish downloading before responding.
-The timeout will keep you from waiting indefinitely.
+ - Throws NotFoundError
 
 ```js
 // by name:
@@ -89,19 +85,12 @@ Stat {
  - `name` Entry path (string).
  - `opts`. Options (object|string). If a string, will act as `opts.encoding`.
  - `opts.encoding` Desired output encoding (string). May be 'binary', 'utf8', 'hex', or 'base64'. Default 'utf8'.
- - `opts.timeout` How long until readFile gives up (number in ms). Defaults to 5000ms.
  - Returns the content of the file in the requested encoding.
- - Throws NotFoundError, NotAFileError, and TimeoutError.
-
-This method will wait for archive content to finish downloading before responding.
-The timeout will keep you from waiting indefinitely.
+ - Throws NotFoundError, NotAFileError.
 
 ```js
 var manifestStr = await pda.readFile(archive, '/dat.json')
 var imageBase64 = await pda.readFile(archive, '/favicon.png', 'base64')
-
-// wait for a day
-var imageBase64 = await pda.readFile(archive, '/dat.json', {timeout: 86400000})
 ```
 
 ### readdir(archive, path[, opts, cb])
@@ -109,7 +98,6 @@ var imageBase64 = await pda.readFile(archive, '/dat.json', {timeout: 86400000})
  - `archive` Hyperdrive archive (object).
  - `path` Target directory path (string).
  - `opts.recursive` Read all subfolders and their files as well?
- - `opts.timeout` How long until readdir gives up (number in ms). Defaults to 5000ms.
  - Returns an array of file and folder names.
 
 ```js
@@ -176,11 +164,10 @@ await pda.rmdir(archive, '/stuff', {recursive: true})
 
 ## Network
 
-### download(archive, name[, opts, cb])
+### download(archive, name[, cb])
 
  - `archive` Hyperdrive archive (object).
  - `name` Entry path (string). Can point to a file or folder.
- - `opts.timeout` How long until download throws a timeout error (number in ms). Optional. Note, Dat will continue trying to download the file in the background after timeout.
 
 Download an archive file or folder-tree.
 

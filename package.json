@@ -31,7 +31,6 @@
     "emit-stream": "^0.1.2",
     "fs-promise": "^2.0.0",
     "hyperdrive-import-files": "^3.0.0",
-    "p-timeout": "^1.0.0",
     "pump": "^1.0.2"
   },
   "devDependencies": {

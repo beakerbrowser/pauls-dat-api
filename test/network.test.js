@@ -80,25 +80,3 @@ test('download a full archive', async t => {
   t.deepEqual(isDownloaded(await pda.stat(dst, '/subdir/foo.txt')), true)
   t.deepEqual(isDownloaded(await pda.stat(dst, '/subdir/bar.data')), true)
 })
-
-// TODO restore timeouts
-// test('timeout', async t => {
-//   const src = await tutil.createArchive([
-//     'foo.txt',
-//     { name: 'bar.data', content: Buffer.from([0x00, 0x01]) },
-//     'subdir/',
-//     'subdir/foo.txt',
-//     { name: 'subdir/bar.data', content: Buffer.from([0x00, 0x01]) },
-//   ])
-//   const dst = hyperdrive(tutil.tmpdir(), src.key, {sparse: true})
-//   const srcRS = src.replicate()
-//   const dstRS = dst.replicate()
-//   srcRS.pipe(dstRS).pipe(srcRS)
-
-//   // download metadata then end replication
-//   await contentEvent(dst)
-//   dstRS.end()
-
-//   // try to fetch a file
-//   await t.throws(pda.download(dst, '/foo.txt', { timeout: 100 }))
-// })

@@ -1,6 +1,6 @@
 const test = require('ava')
 const hyperdrive = require('hyperdrive')
-const {NotFoundError, NotAFileError, TimeoutError} = require('beaker-error-constants')
+const {NotFoundError, NotAFileError} = require('beaker-error-constants')
 const tutil = require('./util')
 const pda = require('../index')
 
@@ -49,25 +49,6 @@ test('readFile encodings', async t => {
   await t.deepEqual(await pda.readFile(archive, 'buf', 'hex'), '00010203')
   await t.deepEqual(await pda.readFile(archive, 'buf', 'base64'), 'AAECAw==')
 })
-
-
-// TODO timeouts
-// test('readFile timeout', async t => {
-//   var archive = hyperdrive(tutil.tmpdir(), tutil.FAKE_DAT_KEY, {createIfMissing: false})
-
-//   // archive is now an empty, non-owned archive that hyperdrive needs data for
-//   // hyperdrive will defer read calls based on the expectation that data will arrive soon
-//   // since the data will never come, this is a good opportunity for us to test the readFile timeout
-
-//   var startTime = Date.now()
-//   try {
-//     await pda.readFile(archive, '/foo', {timeout: 500})
-//     t.fail('Should have thrown')
-//   } catch (e) {
-//     t.truthy(e.timedOut)
-//     t.truthy((Date.now() - startTime) < 1e3)
-//   }
-// })
 
 test('readdir', async t => {
   var archive = await tutil.createArchive([
@@ -129,21 +110,3 @@ test('readdir recursive', async t => {
     'b'
   ])
 })
-
-// TODO timeouts
-// test('readdir timeout', async t => {
-//   var archive = hyperdrive(tutil.tmpdir(), tutil.FAKE_DAT_KEY, {createIfMissing: false})
-
-//   // archive is now an empty, non-owned archive that hyperdrive needs data for
-//   // hyperdrive will defer read calls based on the expectation that data will arrive soon
-//   // since the data will never come, this is a good opportunity for us to test the readFile timeout
-
-//   var startTime = Date.now()
-//   try {
-//     await pda.readdir(archive, '/', {timeout: 500})
-//     t.fail('Should have thrown')
-//   } catch (e) {
-//     t.truthy(e.timedOut)
-//     t.truthy((Date.now() - startTime) < 1e3)
-//   }
-// })
