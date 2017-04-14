@@ -245,6 +245,7 @@ Watches the archive for network events, which it emits as an [emit-stream](https
  - `['network-changed',{connections}]` - The number of connections has changed. `connections` is a number.
  - `['download',{feed,block,bytes}]` - A block has been downloaded. `feed` will either be "metadata" or "content". `block` is the index of data downloaded. `bytes` is the number of bytes in the block.
  - `['upload',{feed,block,bytes}]` - A block has been uploaded. `feed` will either be "metadata" or "content". `block` is the index of data downloaded. `bytes` is the number of bytes in the block.
+ - `['sync',{feed}]` - All known blocks have been downloaded. `feed` will either be "metadata" or "content".
 
 ```js
 var es = pda.createNetworkActivityStream(archive)
@@ -256,6 +257,8 @@ es.on('data', ([event, args]) => {
     console.log('Just downloaded %d bytes (block %d) of the %s feed', args.bytes, args.block, args.feed)
   } else if (event === 'upload') {
     console.log('Just uploaded %d bytes (block %d) of the %s feed', args.bytes, args.block, args.feed)
+  } else if (event === 'sync') {
+    console.log('Finished downloading', args.feed)
   }
 })
 
@@ -271,6 +274,9 @@ events.on('download', args => {
 })
 events.on('upload', args => {
   console.log('Just uploaded %d bytes (block %d) of the %s feed', args.bytes, args.block, args.feed)
+})
+events.on('sync', args => {
+  console.log('Finished downloading', args.feed)
 })
 ```
 

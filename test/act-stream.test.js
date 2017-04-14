@@ -190,10 +190,12 @@ test('createNetworkActivityStream', async t => {
     var gotPeer = false
     var stats = {
       metadata: {
-        down: 0
+        down: 0,
+        synced: false
       },
       content: {
-        down: 0
+        down: 0,
+        synced: false
       }
     }
     stream.on('data', ([event, args]) => {
@@ -201,12 +203,12 @@ test('createNetworkActivityStream', async t => {
         gotPeer = true
       } else if (event === 'download') {
         stats[args.feed].down++
-      } else if (event === 'download-finished') {
-        stats[args.feed].all = true
+      } else if (event === 'sync') {
+        stats[args.feed].synced = true
       }
       if (gotPeer && 
-        stats.metadata.down === 4 &&
-        stats.content.down === 3) {
+        stats.metadata.down === 4 && stats.metadata.synced &&
+        stats.content.down === 3 && stats.content.synced) {
         resolve()
       }
     })
