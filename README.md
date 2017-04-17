@@ -139,6 +139,36 @@ await pda.writeFile(archive, '/profile.png', fs.readFileSync('/tmp/dog.png'))
 await pda.mkdir(archive, '/stuff')
 ```
 
+### copy(archive, sourceName, targetName[, cb])
+
+ - `archive` Hyperdrive archive (object).
+ - `sourceName` Path to file or directory to copy (string).
+ - `targetName` Where to copy the file or folder to (string).
+ - Throws ArchiveNotWritableError, InvalidPathError, EntryAlreadyExistsError, ParentFolderDoesntExistError, InvalidEncodingError.
+
+```js
+// copy file:
+await pda.copy(archive, '/foo.txt', '/foo.txt.back')
+// copy folder:
+await pda.copy(archive, '/stuff', '/stuff-copy')
+```
+
+### rename(archive, sourceName, targetName[, cb])
+
+ - `archive` Hyperdrive archive (object).
+ - `sourceName` Path to file or directory to rename (string).
+ - `targetName` What the file or folder should be named (string).
+ - Throws ArchiveNotWritableError, InvalidPathError, EntryAlreadyExistsError, ParentFolderDoesntExistError, InvalidEncodingError.
+
+This is equivalent to moving a file/folder.
+
+```js
+// move file:
+await pda.copy(archive, '/foo.txt', '/foo.md')
+// move folder:
+await pda.rename(archive, '/stuff', '/things')
+```
+
 ## Delete
 
 ### unlink(archive, name[, cb])
