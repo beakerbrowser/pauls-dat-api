@@ -1,19 +1,86 @@
 const test = require('ava')
 const hyperdrive = require('hyperdrive')
-const memdb = require('memdb')
 const tutil = require('./util')
 const pda = require('../index')
 
+async function contentEvent (archive) {
+  return new Promise(resolve => {
+    archive.on('content', resolve)
+  })
+}
+
 test('createFileActivityStream local', async t => {
   var archive
+  var changes
 
   // no pattern
   // =
 
   archive = await tutil.createArchive()
+  await new Promise(resolve => archive.ready(resolve))
   var stream = pda.createFileActivityStream(archive)
 
-  var changes = ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt']
+  changes = ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt']
+  stream.on('data', ([event, args]) => {
+    t.deepEqual(event, 'changed')
+    t.deepEqual(args.path, changes.shift())
+  })
+
+  await pda.writeFile(archive, '/a.txt', 'one', 'utf8')
+  await pda.writeFile(archive, '/b.txt', 'one', 'utf8')
+  await pda.writeFile(archive, '/a.txt', 'one', 'utf8')
+  await pda.writeFile(archive, '/a.txt', 'two', 'utf8')
+  await pda.writeFile(archive, '/b.txt', 'two', 'utf8')
+  await pda.writeFile(archive, '/c.txt', 'one', 'utf8')
+
+  // simple pattern
+  // =
+
+  archive = await tutil.createArchive()
+  await new Promise(resolve => archive.ready(resolve))
+  var stream = pda.createFileActivityStream(archive, '/a.txt')
+
+  changes = ['/a.txt', '/a.txt', '/a.txt']
+  stream.on('data', ([event, args]) => {
+    t.deepEqual(event, 'changed')
+    t.deepEqual(args.path, changes.shift())
+  })
+
+  await pda.writeFile(archive, '/a.txt', 'one', 'utf8')
+  await pda.writeFile(archive, '/b.txt', 'one', 'utf8')
+  await pda.writeFile(archive, '/a.txt', 'one', 'utf8')
+  await pda.writeFile(archive, '/a.txt', 'two', 'utf8')
+  await pda.writeFile(archive, '/b.txt', 'two', 'utf8')
+  await pda.writeFile(archive, '/c.txt', 'one', 'utf8')
+
+  // complex pattern
+  // =
+
+  archive = await tutil.createArchive()
+  await new Promise(resolve => archive.ready(resolve))
+  var stream = pda.createFileActivityStream(archive, ['/a.txt', '/c.txt'])
+
+  changes = ['/a.txt', '/a.txt', '/a.txt', '/c.txt']
+  stream.on('data', ([event, args]) => {
+    t.deepEqual(event, 'changed')
+    t.deepEqual(args.path, changes.shift())
+  })
+
+  await pda.writeFile(archive, '/a.txt', 'one', 'utf8')
+  await pda.writeFile(archive, '/b.txt', 'one', 'utf8')
+  await pda.writeFile(archive, '/a.txt', 'one', 'utf8')
+  await pda.writeFile(archive, '/a.txt', 'two', 'utf8')
+  await pda.writeFile(archive, '/b.txt', 'two', 'utf8')
+  await pda.writeFile(archive, '/c.txt', 'one', 'utf8')
+
+  // glob
+  // =
+
+  archive = await tutil.createArchive()
+  await new Promise(resolve => archive.ready(resolve))
+  var stream = pda.createFileActivityStream(archive, '/*.txt')
+
+  changes = ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt']
   stream.on('data', ([event, args]) => {
     t.deepEqual(event, 'changed')
     t.deepEqual(args.path, changes.shift())
@@ -33,19 +100,15 @@ test('createFileActivityStream remote sparse', async t => {
   // no pattern
   // =
 
-  const drive2 = hyperdrive(memdb())
-  const srcArchive = await tutil.createArchive()
-  const dstArchive = drive2.createArchive(srcArchive.key, {
-    live: true,
-    sparse: true
-  })
-  dstArchive.metadata.prioritize({priority: 0, start: 0, end: Infinity})
-
-  const srcRS = srcArchive.replicate()
-  const dstRS = dstArchive.replicate()
+  const src = await tutil.createArchive()
+  await new Promise(resolve => src.ready(resolve))
+  const dst = hyperdrive(tutil.tmpdir(), src.key, {sparse: true})
+  const srcRS = src.replicate({live: true})
+  const dstRS = dst.replicate({live: true})
   srcRS.pipe(dstRS).pipe(srcRS)
+  await contentEvent(dst)
 
-  var stream = pda.createFileActivityStream(dstArchive)
+  var stream = pda.createFileActivityStream(dst)
 
   // invalidation phase
 
@@ -59,16 +122,16 @@ test('createFileActivityStream remote sparse', async t => {
     }
   })
 
-  await pda.writeFile(srcArchive, 'a.txt', 'one', 'utf8')
-  await pda.writeFile(srcArchive, 'b.txt', 'one', 'utf8')
-  await pda.writeFile(srcArchive, 'a.txt', 'one', 'utf8')
-  await pda.writeFile(srcArchive, 'a.txt', 'two', 'utf8')
-  await pda.writeFile(srcArchive, 'b.txt', 'two', 'utf8')
-  await pda.writeFile(srcArchive, 'c.txt', 'one', 'utf8')
+  await pda.writeFile(src, 'a.txt', 'one', 'utf8')
+  await pda.writeFile(src, 'b.txt', 'one', 'utf8')
+  await pda.writeFile(src, 'a.txt', 'one', 'utf8')
+  await pda.writeFile(src, 'a.txt', 'two', 'utf8')
+  await pda.writeFile(src, 'b.txt', 'two', 'utf8')
+  await pda.writeFile(src, 'c.txt', 'one', 'utf8')
 
-  await pda.download(dstArchive, 'a.txt')
-  await pda.download(dstArchive, 'c.txt')
-  await pda.download(dstArchive, 'b.txt')
+  await pda.download(dst, 'a.txt')
+  await pda.download(dst, 'c.txt')
+  await pda.download(dst, 'b.txt')
 })
 
 test('createFileActivityStream remote non-sparse', async t => {
@@ -77,18 +140,15 @@ test('createFileActivityStream remote non-sparse', async t => {
   // no pattern
   // =
 
-  const drive2 = hyperdrive(memdb())
-  const srcArchive = await tutil.createArchive()
-  const dstArchive = drive2.createArchive(srcArchive.key, {
-    live: true,
-    sparse: false
-  })
-
-  const srcRS = srcArchive.replicate()
-  const dstRS = dstArchive.replicate()
+  const src = await tutil.createArchive()
+  await new Promise(resolve => src.ready(resolve))
+  const dst = hyperdrive(tutil.tmpdir(), src.key, {sparse: false})
+  const srcRS = src.replicate({live: true})
+  const dstRS = dst.replicate({live: true})
   srcRS.pipe(dstRS).pipe(srcRS)
+  await contentEvent(dst)
 
-  var stream = pda.createFileActivityStream(dstArchive)
+  var stream = pda.createFileActivityStream(dst)
 
   // invalidation phase
 
@@ -107,39 +167,35 @@ test('createFileActivityStream remote non-sparse', async t => {
     })
   })
 
-  await pda.writeFile(srcArchive, 'a.txt', 'one', 'utf8')
-  await pda.writeFile(srcArchive, 'b.txt', 'one', 'utf8')
-  await pda.writeFile(srcArchive, 'a.txt', 'one', 'utf8')
-  await pda.writeFile(srcArchive, 'a.txt', 'two', 'utf8')
-  await pda.writeFile(srcArchive, 'b.txt', 'two', 'utf8')
-  await pda.writeFile(srcArchive, 'c.txt', 'one', 'utf8')
+  await pda.writeFile(src, 'a.txt', 'one', 'utf8')
+  await pda.writeFile(src, 'b.txt', 'one', 'utf8')
+  await pda.writeFile(src, 'a.txt', 'one', 'utf8')
+  await pda.writeFile(src, 'a.txt', 'two', 'utf8')
+  await pda.writeFile(src, 'b.txt', 'two', 'utf8')
+  await pda.writeFile(src, 'c.txt', 'one', 'utf8')
   await whenDone
 })
 
+
 test('createNetworkActivityStream', async t => {
-  const srcArchive = await tutil.createArchive([
+  const src = await tutil.createArchive([
     'foo.txt',
     { name: 'bar.data', content: Buffer.from([0x00, 0x01]) },
     'bar.txt'
   ])
-
-  const drive2 = hyperdrive(memdb())
-  const dstArchive = drive2.createArchive(srcArchive.key, {
-    live: true,
-    sparse: false
-  })
+  const dst = hyperdrive(tutil.tmpdir(), src.key, {sparse: false})
 
   var whenDone = new Promise(resolve => {
-    var stream = pda.createNetworkActivityStream(dstArchive)
+    var stream = pda.createNetworkActivityStream(dst)
     var gotPeer = false
     var stats = {
       metadata: {
         down: 0,
-        all: false
+        synced: false
       },
       content: {
         down: 0,
-        all: false
+        synced: false
       }
     }
     stream.on('data', ([event, args]) => {
@@ -147,19 +203,19 @@ test('createNetworkActivityStream', async t => {
         gotPeer = true
       } else if (event === 'download') {
         stats[args.feed].down++
-      } else if (event === 'download-finished') {
-        stats[args.feed].all = true
+      } else if (event === 'sync') {
+        stats[args.feed].synced = true
       }
       if (gotPeer && 
-        stats.metadata.down === 4 && stats.metadata.all &&
-        stats.content.down === 3 && stats.content.all) {
+        stats.metadata.down === 4 && stats.metadata.synced &&
+        stats.content.down === 3 && stats.content.synced) {
         resolve()
       }
     })
   })
 
-  const srcRS = srcArchive.replicate()
-  const dstRS = dstArchive.replicate()
+  const srcRS = src.replicate({live: true})
+  const dstRS = dst.replicate({live: true})
   srcRS.pipe(dstRS).pipe(srcRS)
 
   await whenDone

@@ -13,13 +13,16 @@ Any time a hyperdrive `archive` is expected, a [dat-node](https://github.com/dat
 
 
 - [Lookup](#lookup)
-  - [lookupEntry(archive, name|fn[, opts, cb])](#lookupentryarchive-namefn-opts-cb)
+  - [stat(archive, name[, opts, cb])](#statarchive-name-opts-cb)
 - [Read](#read)
   - [readFile(archive, name[, opts, cb])](#readfilearchive-name-opts-cb)
-  - [listFiles(archive, path[, cb])](#listfilesarchive-path-cb)
+  - [readdir(archive, path[, opts, cb])](#readdirarchive-path-opts-cb)
 - [Write](#write)
   - [writeFile(archive, name, data[, opts, cb])](#writefilearchive-name-data-opts-cb)
-  - [createDirectory(archive, name[, cb])](#createdirectoryarchive-name-cb)
+  - [mkdir(archive, name[, cb])](#mkdirarchive-name-cb)
+- [Delete](#delete)
+  - [unlink(archive, name[, cb])](#unlinkarchive-name-cb)
+  - [rmdir(archive, name[, opts, cb])](#rmdirarchive-name-opts-cb)
 - [Network](#network)
   - [download(archive, name[, opts, cb])](#downloadarchive-name-opts-cb)
 - [Activity Streams](#activity-streams)
@@ -34,8 +37,6 @@ Any time a hyperdrive `archive` is expected, a [dat-node](https://github.com/dat
   - [writeManifest(archive, manifest[, cb])](#writemanifestarchive-manifest-cb)
   - [updateManifest(archive, manifest[, cb])](#updatemanifestarchive-manifest-cb)
   - [generateManifest(opts)](#generatemanifestopts)
-- [Helpers](#helpers)
-  - [normalizeEntryName(entry)](#normalizeentrynameentry)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -45,24 +46,35 @@ const pda = require('pauls-dat-api')
 
 ## Lookup
 
-### lookupEntry(archive, name|fn[, opts, cb])
+### stat(archive, name[, cb])
 
  - `archive` Hyperdrive archive (object).
  - `name` Entry name (string).
- - `fn` Entry predicate (function (entry) => boolean).
- - `opts.timeout` How long until readFile gives up (number in ms). Defaults to 5000ms.
- - Returns a Hyperdrive entry (object). 
- - Does not throw. Returns null on not found.
-
-This method will wait for archive metadata to finish downloading before responding.
-The timeout will keep you from waiting indefinitely.
+ - Returns a Hyperdrive Stat entry (object).
+ - Throws NotFoundError
 
 ```js
 // by name:
-var entry = await pda.lookupEntry(archive, '/dat.json')
-
-// by a predicate:
-var entry = await pda.lookupEntry(archive, entry => entry.name === '/dat.json')
+var st = await pda.stat(archive, '/dat.json')
+st.isDirectory()
+st.isFile()
+console.log(st) /* =>
+Stat {
+  dev: 0,
+  nlink: 1,
+  rdev: 0,
+  blksize: 0,
+  ino: 0,
+  mode: 16877,
+  uid: 0,
+  gid: 0,
+  size: 0,
+  offset: 0,
+  blocks: 0,
+  atime: 2017-04-10T18:59:00.147Z,
+  mtime: 2017-04-10T18:59:00.147Z,
+  ctime: 2017-04-10T18:59:00.147Z,
+  linkname: undefined } */
 ```
 
 ## Read
@@ -73,43 +85,32 @@ var entry = await pda.lookupEntry(archive, entry => entry.name === '/dat.json')
  - `name` Entry path (string).
  - `opts`. Options (object|string). If a string, will act as `opts.encoding`.
  - `opts.encoding` Desired output encoding (string). May be 'binary', 'utf8', 'hex', or 'base64'. Default 'utf8'.
- - `opts.timeout` How long until readFile gives up (number in ms). Defaults to 5000ms.
  - Returns the content of the file in the requested encoding.
- - Throws NotFoundError, NotAFileError, and TimeoutError.
-
-This method will wait for archive content to finish downloading before responding.
-The timeout will keep you from waiting indefinitely.
+ - Throws NotFoundError, NotAFileError.
 
 ```js
 var manifestStr = await pda.readFile(archive, '/dat.json')
 var imageBase64 = await pda.readFile(archive, '/favicon.png', 'base64')
-
-// wait for a day
-var imageBase64 = await pda.readFile(archive, '/dat.json', {timeout: 86400000})
 ```
 
-### listFiles(archive, path[, opts, cb])
+### readdir(archive, path[, opts, cb])
 
  - `archive` Hyperdrive archive (object).
  - `path` Target directory path (string).
- - `opts.depth` How many folders deep should it recurse to (number). Defaults to 1. If false, will list all folders.
- - `opts.timeout` How long until listFiles gives up (number in ms). Defaults to 5000ms.
- - Returns an map representing the entries in the directory (object).
- - Does not throw. Returns an empty object on bad path.
+ - `opts.recursive` Read all subfolders and their files as well?
+ - Returns an array of file and folder names.
 
 ```js
-var listing = await pda.listFiles(archive, '/assets')
-console.log(listing) /* => {
-  'profile.png': { type: 'file', name: '/assets/profile.png', ... },
-  'styles.css': { type: 'file', name: '/assets/styles.css', ... }  
-}*/
+var listing = await pda.readdir(archive, '/assets')
+console.log(listing) // => ['profile.png', 'styles.css']
 
-var listing = await pda.listFiles(archive, '/', { depth: 2 })
-console.log(listing) /* => {
-  'index.html': { type: 'file', name: '/index.html', ... },
-  'assets/profile.png': { type: 'file', name: '/assets/profile.png', ... },
-  'assets/styles.css': { type: 'file', name: '/assets/styles.css', ... }  
-}*/
+var listing = await pda.readdir(archive, '/', { recursive: true })
+console.log(listing) /* => [
+  'index.html',
+  'assets',
+  'assets/profile.png',
+  'assets/styles.css'
+]*/
 ```
 
 ## Write
@@ -121,30 +122,82 @@ console.log(listing) /* => {
  - `data` Data to write (string|Buffer).
  - `opts`. Options (object|string). If a string, will act as `opts.encoding`.
  - `opts.encoding` Desired file encoding (string). May be 'binary', 'utf8', 'hex', or 'base64'. Default 'utf8' if `data` is a string, 'binary' if `data` is a Buffer.
- - Throws InvalidEncodingError.
+ - Throws ArchiveNotWritableError, InvalidPathError, EntryAlreadyExistsError, ParentFolderDoesntExistError, InvalidEncodingError.
 
 ```js
 await pda.writeFile(archive, '/hello.txt', 'world', 'utf8')
 await pda.writeFile(archive, '/profile.png', fs.readFileSync('/tmp/dog.png'))
 ```
 
-### createDirectory(archive, name[, cb])
+### mkdir(archive, name[, cb])
 
  - `archive` Hyperdrive archive (object).
  - `name` Directory path (string).
+ - Throws ArchiveNotWritableError, InvalidPathError, EntryAlreadyExistsError, ParentFolderDoesntExistError, InvalidEncodingError.
 
 ```js
-await pda.createDirectory(archive, '/stuff')
+await pda.mkdir(archive, '/stuff')
+```
+
+### copy(archive, sourceName, targetName[, cb])
+
+ - `archive` Hyperdrive archive (object).
+ - `sourceName` Path to file or directory to copy (string).
+ - `targetName` Where to copy the file or folder to (string).
+ - Throws ArchiveNotWritableError, InvalidPathError, EntryAlreadyExistsError, ParentFolderDoesntExistError, InvalidEncodingError.
+
+```js
+// copy file:
+await pda.copy(archive, '/foo.txt', '/foo.txt.back')
+// copy folder:
+await pda.copy(archive, '/stuff', '/stuff-copy')
+```
+
+### rename(archive, sourceName, targetName[, cb])
+
+ - `archive` Hyperdrive archive (object).
+ - `sourceName` Path to file or directory to rename (string).
+ - `targetName` What the file or folder should be named (string).
+ - Throws ArchiveNotWritableError, InvalidPathError, EntryAlreadyExistsError, ParentFolderDoesntExistError, InvalidEncodingError.
+
+This is equivalent to moving a file/folder.
+
+```js
+// move file:
+await pda.copy(archive, '/foo.txt', '/foo.md')
+// move folder:
+await pda.rename(archive, '/stuff', '/things')
+```
+
+## Delete
+
+### unlink(archive, name[, cb])
+
+ - `archive` Hyperdrive archive (object).
+ - `name` Entry path (string).
+ - Throws ArchiveNotWritableError, NotFoundError, NotAFileError
+
+```js
+await pda.unlink(archive, '/hello.txt')
+```
+
+### rmdir(archive, name[, opts, cb])
+
+ - `archive` Hyperdrive archive (object).
+ - `name` Entry path (string).
+ - `opts.recursive` Delete all subfolders and files if the directory is not empty.
+ - Throws ArchiveNotWritableError, NotFoundError, NotAFolderError, DestDirectoryNotEmpty
+
+```js
+await pda.rmdir(archive, '/stuff', {recursive: true})
 ```
 
 ## Network
 
-### download(archive, name[, opts, cb])
+### download(archive, name[, cb])
 
  - `archive` Hyperdrive archive (object).
  - `name` Entry path (string). Can point to a file or folder.
- - `opts.timeout` How long until download throws a timeout error (number in ms). Optional. Note, Dat will continue trying to download the file in the background after timeout.
- - `opts.priority` How important is the download (number in 1-5). When picking the next file to download, a priority: 5 will happen before a priority: 4, etc.
 
 Download an archive file or folder-tree.
 
@@ -209,9 +262,7 @@ Watches the archive for network events, which it emits as an [emit-stream](https
  - `['network-changed',{connections}]` - The number of connections has changed. `connections` is a number.
  - `['download',{feed,block,bytes}]` - A block has been downloaded. `feed` will either be "metadata" or "content". `block` is the index of data downloaded. `bytes` is the number of bytes in the block.
  - `['upload',{feed,block,bytes}]` - A block has been uploaded. `feed` will either be "metadata" or "content". `block` is the index of data downloaded. `bytes` is the number of bytes in the block.
- - `['download-complete',{feed}]` - A feed has finished downloading all of its blocks. `feed` will either be "metadata" or "content".
-
-Note that if a feed is in sparse-mode, 'download-complete' may never emit.
+ - `['sync',{feed}]` - All known blocks have been downloaded. `feed` will either be "metadata" or "content".
 
 ```js
 var es = pda.createNetworkActivityStream(archive)
@@ -223,8 +274,8 @@ es.on('data', ([event, args]) => {
     console.log('Just downloaded %d bytes (block %d) of the %s feed', args.bytes, args.block, args.feed)
   } else if (event === 'upload') {
     console.log('Just uploaded %d bytes (block %d) of the %s feed', args.bytes, args.block, args.feed)
-  } else if (event === 'download-finished') {
-    console.log('Finished downloading the %s feed', args.feed)
+  } else if (event === 'sync') {
+    console.log('Finished downloading', args.feed)
   }
 })
 
@@ -241,8 +292,8 @@ events.on('download', args => {
 events.on('upload', args => {
   console.log('Just uploaded %d bytes (block %d) of the %s feed', args.bytes, args.block, args.feed)
 })
-events.on('download-finished', args => {
-  console.log('Finished downloading the %s feed', args.feed)
+events.on('sync', args => {
+  console.log('Finished downloading', args.feed)
 })
 ```
 
@@ -321,14 +372,19 @@ Copies an archive into another archive.
 NOTE
 
  - Unlike exportFilesystemToArchive, this will not compare the target for equality before copying. It copies files indescriminately.
- - This method also does not yet track stats.
 
 ```js
-await pda.exportArchiveToArchive({
+var stats = await pda.exportArchiveToArchive({
   srcArchive: archiveA,
   dstArchive: archiveB,
   skipUndownloadedFiles: true
 })
+console.log(stats) /* => {
+  addedFiles: ['fuzz.txt', 'foo/bar.txt'],
+  updatedFiles: ['something.txt'],
+  fileCount: 3,
+  totalSize: 400 // bytes
+}*/
 ```
 
 ## Manifest
@@ -385,17 +441,3 @@ Helper to generate a manifest object. Opts in detail:
 ```
 
 See: https://github.com/datprotocol/dat.json
-
-## Helpers
-
-### normalizeEntryName(entry)
-
- - `entry` Hyperdrive entry (object).
- - Returns a normalized name (string).
-
-Dat is agnostic about whether entry names have a preceding slash. This method enforces a preceding slash.
-
-```js
-pda.normalizeEntryName({ name: 'foo/bar' })
-// => '/foo/bar'
-```
