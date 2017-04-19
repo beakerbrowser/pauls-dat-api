@@ -101,6 +101,32 @@ test('exportFilesystemToArchive', async t => {
   t.deepEqual(statsE.updatedFiles, [])
   t.deepEqual(statsE.skipCount, 0)
   t.deepEqual(statsE.fileCount, 5)
+
+  // into bad dest
+  // =
+
+  await t.throws(pda.exportFilesystemToArchive({
+    srcPath,
+    dstArchive,
+    dstPath: '/bad/subdir',
+    inplaceImport: true
+  }))
+  await t.throws(pda.exportFilesystemToArchive({
+    srcPath,
+    dstArchive,
+    dstPath: '/bad/subdir'
+  }))
+  await t.throws(pda.exportFilesystemToArchive({
+    srcPath,
+    dstArchive,
+    dstPath: '/subdir3/foo.txt',
+    inplaceImport: true
+  }))
+  await t.throws(pda.exportFilesystemToArchive({
+    srcPath,
+    dstArchive,
+    dstPath: '/subdir3/foo.txt'
+  }))
 })
 
 test('exportArchiveToFilesystem', async t => {
@@ -253,4 +279,18 @@ test('exportArchiveToArchive', async t => {
 
   t.deepEqual((await pda.readdir(dstArchiveE, '/')).sort(), ['bar.data', 'foo.txt', 'otherfile.txt', 'subdir'])
   t.deepEqual((await pda.readdir(dstArchiveE, '/subdir')).sort(), ['bar.data', 'foo.txt'])
+
+  // into bad subdir
+  // =
+
+  await t.throws(pda.exportArchiveToArchive({
+    srcArchive: srcArchiveA,
+    dstArchive: dstArchiveE,
+    dstPath: '/bad/subdir'
+  }))
+  await t.throws(pda.exportArchiveToArchive({
+    srcArchive: srcArchiveA,
+    dstArchive: dstArchiveE,
+    dstPath: '/foo.txt'
+  }))
 })
