@@ -36,6 +36,6 @@
   "devDependencies": {
     "ava": "^0.18.1",
     "dat-node": "^2.0.0",
-    "hyperdrive": "^8.3.0"
+    "hyperdrive": "^8.3.2"
   }
 }
