@@ -12,13 +12,14 @@ async function contentEvent (archive) {
 test('createFileActivityStream local', async t => {
   var archive
   var changes
+  var stream
 
   // no pattern
   // =
 
   archive = await tutil.createArchive()
   await new Promise(resolve => archive.ready(resolve))
-  var stream = pda.createFileActivityStream(archive)
+  stream = pda.createFileActivityStream(archive)
 
   changes = ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt']
   stream.on('data', ([event, args]) => {
@@ -38,7 +39,7 @@ test('createFileActivityStream local', async t => {
 
   archive = await tutil.createArchive()
   await new Promise(resolve => archive.ready(resolve))
-  var stream = pda.createFileActivityStream(archive, '/a.txt')
+  stream = pda.createFileActivityStream(archive, '/a.txt')
 
   changes = ['/a.txt', '/a.txt', '/a.txt']
   stream.on('data', ([event, args]) => {
@@ -58,7 +59,7 @@ test('createFileActivityStream local', async t => {
 
   archive = await tutil.createArchive()
   await new Promise(resolve => archive.ready(resolve))
-  var stream = pda.createFileActivityStream(archive, ['/a.txt', '/c.txt'])
+  stream = pda.createFileActivityStream(archive, ['/a.txt', '/c.txt'])
 
   changes = ['/a.txt', '/a.txt', '/a.txt', '/c.txt']
   stream.on('data', ([event, args]) => {
@@ -78,7 +79,7 @@ test('createFileActivityStream local', async t => {
 
   archive = await tutil.createArchive()
   await new Promise(resolve => archive.ready(resolve))
-  var stream = pda.createFileActivityStream(archive, '/*.txt')
+  stream = pda.createFileActivityStream(archive, '/*.txt')
 
   changes = ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt']
   stream.on('data', ([event, args]) => {
@@ -95,8 +96,6 @@ test('createFileActivityStream local', async t => {
 })
 
 test('createFileActivityStream remote sparse', async t => {
-  var archive
-
   // no pattern
   // =
 
@@ -117,7 +116,7 @@ test('createFileActivityStream remote sparse', async t => {
   stream.on('data', ([event, args]) => {
     if (event === 'invalidated') {
       t.deepEqual(args.path, invalidates.shift())
-    } else if (event === 'changed'){
+    } else if (event === 'changed') {
       t.deepEqual(args.path, changes.shift())
     }
   })
@@ -135,8 +134,6 @@ test('createFileActivityStream remote sparse', async t => {
 })
 
 test('createFileActivityStream remote non-sparse', async t => {
-  var archive
-
   // no pattern
   // =
 
@@ -176,7 +173,6 @@ test('createFileActivityStream remote non-sparse', async t => {
   await whenDone
 })
 
-
 test('createNetworkActivityStream', async t => {
   const src = await tutil.createArchive([
     'foo.txt',
@@ -206,7 +202,7 @@ test('createNetworkActivityStream', async t => {
       } else if (event === 'sync') {
         stats[args.feed].synced = true
       }
-      if (gotPeer && 
+      if (gotPeer &&
         stats.metadata.down === 4 && stats.metadata.synced &&
         stats.content.down === 3 && stats.content.synced) {
         resolve()

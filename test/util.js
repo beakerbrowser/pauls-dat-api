@@ -1,17 +1,22 @@
 const co = require('co')
 const hyperdrive = require('hyperdrive')
+const hyperstaging = require('hyperdrive-staging-area')
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
 
 const FAKE_DAT_KEY = 'f'.repeat(64)
 
-function createArchive (names) {
+function createArchive (names, {staging} = {}) {
   names = names || []
-  var promises = []
-  const archive = hyperdrive(tmpdir())
+  var archive = hyperdrive(tmpdir())
+  var target = archive
+  if (staging) {
+    archive.staging = hyperstaging(archive, tmpdir())
+    target = archive.staging
+  }
   return co(function* () {
-    for (var i=0; i < names.length; i++) {
+    for (var i = 0; i < names.length; i++) {
       let name = names[i]
       let content = 'content'
       if (typeof name === 'object') {
@@ -21,13 +26,19 @@ function createArchive (names) {
 
       yield new Promise(resolve => {
         if (name.slice(-1) === '/') {
-          archive.mkdir(name, resolve)
+          target.mkdir(name, resolve)
         } else {
-          archive.writeFile(name, content, resolve)
+          target.writeFile(name, content, resolve)
         }
       })
     }
-  }).then(() => archive)
+  }).then(() => new Promise(resolve => {
+    if (staging) {
+      archive.staging.commit((err, changes) => resolve(archive))
+    } else {
+      resolve(archive)
+    }
+  }))
 }
 
 function tmpdir () {

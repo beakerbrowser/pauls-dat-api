@@ -1,6 +1,4 @@
 const test = require('ava')
-const fs = require('fs')
-const path = require('path')
 const hyperdrive = require('hyperdrive')
 const tutil = require('./util')
 const pda = require('../index')
@@ -21,7 +19,7 @@ test('download individual files', async t => {
     { name: 'bar.data', content: Buffer.from([0x00, 0x01]) },
     'subdir/',
     'subdir/foo.txt',
-    { name: 'subdir/bar.data', content: Buffer.from([0x00, 0x01]) },
+    { name: 'subdir/bar.data', content: Buffer.from([0x00, 0x01]) }
   ])
   const dst = hyperdrive(tutil.tmpdir(), src.key, {sparse: true})
   const srcRS = src.replicate({live: true})
@@ -45,7 +43,7 @@ test('download a subdirectory', async t => {
     { name: 'bar.data', content: 'How about another' },
     'subdir/',
     { name: 'subdir/foo.txt', content: 'Sub dir item here' },
-    { name: 'subdir/bar.data', content: 'And the last one' },
+    { name: 'subdir/bar.data', content: 'And the last one' }
   ])
   const dst = hyperdrive(tutil.tmpdir(), src.key, {sparse: true})
   const srcRS = src.replicate({live: true})
@@ -66,7 +64,7 @@ test('download a full archive', async t => {
     { name: 'bar.data', content: Buffer.from([0x00, 0x01]) },
     'subdir/',
     'subdir/foo.txt',
-    { name: 'subdir/bar.data', content: Buffer.from([0x00, 0x01]) },
+    { name: 'subdir/bar.data', content: Buffer.from([0x00, 0x01]) }
   ])
   const dst = hyperdrive(tutil.tmpdir(), src.key, {sparse: true})
   const srcRS = src.replicate({live: true})
