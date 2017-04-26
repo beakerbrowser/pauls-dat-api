@@ -24,9 +24,9 @@ await pda.readFile(staging, '/hello.txt') // read the local hello.txt
 
 
 - [Staging](#staging)
-  - [diff(archive, staging[, cb])](#diffarchive-staging-cb)
-  - [commit(archive, staging[, cb])](#commitarchive-staging-cb)
-  - [revert(archive, staging[, cb])](#revertarchive-staging-cb)
+  - [diff(staging[, opts, cb])](#diffstaging-opts-cb)
+  - [commit(staging[, opts, cb])](#commitstaging-opts-cb)
+  - [revert(staging[, opts, cb])](#revertstaging-opts-cb)
 - [Lookup](#lookup)
   - [stat(archive, name[, cb])](#statarchive-name-cb)
 - [Read](#read)
@@ -43,7 +43,7 @@ await pda.readFile(staging, '/hello.txt') // read the local hello.txt
 - [Network](#network)
   - [download(archive, name[, cb])](#downloadarchive-name-cb)
 - [Activity Streams](#activity-streams)
-  - [createFileActivityStream(archive[, path])](#createfileactivitystreamarchive-path)
+  - [createFileActivityStream(archive[, staging, path])](#createfileactivitystreamarchive-staging-path)
   - [createNetworkActivityStream(archive)](#createnetworkactivitystreamarchive)
 - [Exporters](#exporters)
   - [exportFilesystemToArchive(opts[, cb])](#exportfilesystemtoarchiveopts-cb)
@@ -307,9 +307,10 @@ await pda.download(archive, '/')
 
 ## Activity Streams
 
-### createFileActivityStream(archive[, path])
+### createFileActivityStream(archive[, staging, path])
 
- - `archive` Hyperdrive archive (object). Can not be a staging object.
+ - `archive` Hyperdrive archive (object).
+ - `staging` HyperdriveStagingArea instance (object).
  - `path` Entry path (string) or [anymatch](npm.im/anymatch) pattern (array of strings). If falsy, will watch all files.
  - Returns a Readable stream.
 
