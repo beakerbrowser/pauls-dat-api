@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "ava": "^0.18.1",
-    "hyperdrive": "^8.3.2",
+    "hyperdrive": "^9.0.0",
     "hyperdrive-staging-area": "^1.1.1"
   }
 }
