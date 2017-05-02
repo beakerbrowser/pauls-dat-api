@@ -54,6 +54,8 @@ await pda.readFile(staging, '/hello.txt') // read the local hello.txt
   - [writeManifest(archive, manifest[, cb])](#writemanifestarchive-manifest-cb)
   - [updateManifest(archive, manifest[, cb])](#updatemanifestarchive-manifest-cb)
   - [generateManifest(opts)](#generatemanifestopts)
+- [Helpers](#helpers)
+  - [findEntryByContentBlock(archive, block)](#findentrybycontentblockarchive-block)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -537,3 +539,22 @@ Helper to generate a manifest object. Opts in detail:
 ```
 
 See: https://github.com/datprotocol/dat.json
+
+## Helpers
+
+### findEntryByContentBlock(archive, block)
+
+ - `archive` Hyperdrive archive (object).
+ - `block` Content-block index
+ - Returns a Promise for `{name:, start:, end:}`
+
+Runs a binary search to find the file-entry that the given content-block index belongs to.
+
+```js
+await pda.findEntryByContentBlock(archive, 5)
+/* => {
+  name: '/foo.txt',
+  start: 4,
+  end: 6
+}*/
+```

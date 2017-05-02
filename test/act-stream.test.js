@@ -245,6 +245,9 @@ test('createFileActivityStream remote sparse', async t => {
   await pda.writeFile(src, 'b.txt', 'two', 'utf8')
   await pda.writeFile(src, 'c.txt', 'one', 'utf8')
 
+  // wait 100ms to let metadata sync
+  await new Promise(resolve => setTimeout(resolve, 100))
+
   await pda.download(dst, 'a.txt')
   await pda.download(dst, 'c.txt')
   await pda.download(dst, 'b.txt')
@@ -269,7 +272,7 @@ test('createFileActivityStream remote sparse w/staging', async t => {
   dst.staging.startAutoSync()
 
   var stream = pda.createFileActivityStream(dst, dst.staging)
-  
+
   done = new Promise(resolve => {
     var invalidates = ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt']
     var changes = ['/a.txt', '/b.txt', '/c.txt']
@@ -291,6 +294,9 @@ test('createFileActivityStream remote sparse w/staging', async t => {
   await pda.writeFile(src, 'a.txt', 'two', 'utf8')
   await pda.writeFile(src, 'b.txt', 'two', 'utf8')
   await pda.writeFile(src, 'c.txt', 'one', 'utf8')
+
+  // wait 100ms to let metadata sync
+  await new Promise(resolve => setTimeout(resolve, 100))
 
   await pda.download(dst, 'a.txt')
   await pda.download(dst, 'c.txt')
@@ -379,6 +385,9 @@ test('createFileActivityStream remote non-sparse w/staging', async t => {
   await pda.writeFile(src, 'a.txt', 'two', 'utf8')
   await pda.writeFile(src, 'b.txt', 'two', 'utf8')
   await pda.writeFile(src, 'c.txt', 'one', 'utf8')
+
+  // wait 100ms to let metadata sync
+  await new Promise(resolve => setTimeout(resolve, 100))
 
   await pda.download(dst, 'a.txt')
   await pda.download(dst, 'c.txt')
