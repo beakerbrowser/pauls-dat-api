@@ -323,8 +323,8 @@ test('createFileActivityStream remote non-sparse', async t => {
   // invalidation phase
 
   var done = new Promise(resolve => {
-    var invalidates = ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt']
-    var changes = ['/a.txt', '/b.txt', '/c.txt']
+    var invalidates = ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt', '/a.txt']
+    var changes = ['/a.txt', '/b.txt', '/c.txt', '/a.txt']
     stream.on('data', ([event, args]) => {
       if (event === 'invalidated') {
         t.deepEqual(args.path, invalidates.shift())
@@ -343,6 +343,7 @@ test('createFileActivityStream remote non-sparse', async t => {
   await pda.writeFile(src, 'a.txt', 'two', 'utf8')
   await pda.writeFile(src, 'b.txt', 'two', 'utf8')
   await pda.writeFile(src, 'c.txt', 'one', 'utf8')
+  await pda.unlink(src, 'a.txt')
   await done
 })
 
