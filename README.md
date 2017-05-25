@@ -19,6 +19,13 @@ await pda.readFile(archive, '/hello.txt') // read the committed hello.txt
 await pda.readFile(staging, '/hello.txt') // read the local hello.txt
 ```
 
+** NOTE: this library is written natively for node 7 and above. **
+
+To use with node versions lesser than 7 use:
+```js
+var pda = require('pauls-dat-api/es5');
+```
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
@@ -343,7 +350,7 @@ var emitStream = require('emit-stream')
 var events = emitStream(es)
 events.on('invalidated', args => {
   console.log(args.path, 'has been invalidated')
-  pda.download(archive, args.path)  
+  pda.download(archive, args.path)
 })
 events.on('changed', args => {
   console.log(args.path, 'has changed')
