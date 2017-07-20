@@ -269,6 +269,9 @@ test('InvalidPathError', async t => {
 
   const err4 = await t.throws(pda.rename(archive, '/foo', '/foo%20bar'))
   t.truthy(err4.invalidPath)
+
+  const noerr = await pda.mkdir(archive, '/foo bar')
+  t.truthy(typeof noerr === 'undefined')
 })
 
 test('InvalidPathError w/staging', async t => {
@@ -286,6 +289,9 @@ test('InvalidPathError w/staging', async t => {
 
   const err4 = await t.throws(pda.rename(archive.staging, '/foo', '/foo%20bar'))
   t.truthy(err4.invalidPath)
+
+  const noerr = await pda.mkdir(archive.staging, '/foo bar')
+  t.truthy(typeof noerr === 'undefined')
 })
 
 test('ParentFolderDoesntExistError', async t => {
