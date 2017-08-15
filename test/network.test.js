@@ -78,3 +78,30 @@ test('download a full archive', async t => {
   t.deepEqual(isDownloaded(await pda.stat(dst, '/subdir/foo.txt')), true)
   t.deepEqual(isDownloaded(await pda.stat(dst, '/subdir/bar.data')), true)
 })
+
+test('download an already-downloaed archive', async t => {
+  const src = await tutil.createArchive([
+    'foo.txt',
+    { name: 'bar.data', content: Buffer.from([0x00, 0x01]) },
+    'subdir/',
+    'subdir/foo.txt',
+    { name: 'subdir/bar.data', content: Buffer.from([0x00, 0x01]) }
+  ])
+  const dst = hyperdrive(tutil.tmpdir(), src.key, {sparse: true})
+  const srcRS = src.replicate({live: true})
+  const dstRS = dst.replicate({live: true})
+  srcRS.pipe(dstRS).pipe(srcRS)
+  await contentEvent(dst)
+
+  await pda.download(dst, '/')
+  t.deepEqual(isDownloaded(await pda.stat(dst, '/foo.txt')), true)
+  t.deepEqual(isDownloaded(await pda.stat(dst, '/bar.data')), true)
+  t.deepEqual(isDownloaded(await pda.stat(dst, '/subdir/foo.txt')), true)
+  t.deepEqual(isDownloaded(await pda.stat(dst, '/subdir/bar.data')), true)
+  
+  await pda.download(dst, '/')
+  t.deepEqual(isDownloaded(await pda.stat(dst, '/foo.txt')), true)
+  t.deepEqual(isDownloaded(await pda.stat(dst, '/bar.data')), true)
+  t.deepEqual(isDownloaded(await pda.stat(dst, '/subdir/foo.txt')), true)
+  t.deepEqual(isDownloaded(await pda.stat(dst, '/subdir/bar.data')), true)
+})
