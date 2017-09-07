@@ -9,23 +9,27 @@ test('read/write/update manifest', async t => {
   await pda.writeManifest(archive, {
     url: `dat://${tutil.FAKE_DAT_KEY}`,
     title: 'My Dat',
-    description: 'This dat has a manifest!'
+    description: 'This dat has a manifest!',
+    type: 'foo bar'
   })
 
   t.deepEqual(await pda.readManifest(archive), {
-    url: `dat://${tutil.FAKE_DAT_KEY}`,
     title: 'My Dat',
-    description: 'This dat has a manifest!'
+    description: 'This dat has a manifest!',
+    type: ['foo', 'bar'],
+    url: `dat://${tutil.FAKE_DAT_KEY}`
   })
 
   await pda.updateManifest(archive, {
-    title: 'My Dat!!'
+    title: 'My Dat!!',
+    type: 'foo'
   })
 
   t.deepEqual(await pda.readManifest(archive), {
-    url: `dat://${tutil.FAKE_DAT_KEY}`,
     title: 'My Dat!!',
-    description: 'This dat has a manifest!'
+    description: 'This dat has a manifest!',
+    type: ['foo'],
+    url: `dat://${tutil.FAKE_DAT_KEY}`
   })
 })
 

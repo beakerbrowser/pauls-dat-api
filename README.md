@@ -538,10 +538,7 @@ Helper to generate a manifest object. Opts in detail:
   url: String, the dat's url
   title: String
   description: String
-  author: String
-  version: String
-  forkOf: String, the forked-from dat's url
-  createdBy: String, the url of the app that created the dat
+  type: Array<String>
 }
 ```
 
