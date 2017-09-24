@@ -10,14 +10,22 @@ test('read/write/update manifest', async t => {
     url: `dat://${tutil.FAKE_DAT_KEY}`,
     title: 'My Dat',
     description: 'This dat has a manifest!',
-    type: 'foo bar'
+    type: 'foo bar',
+    author: {
+      name: 'Bob',
+      url: 'dat://ffffffffffffffffffffffffffffffff'
+    }
   })
 
   t.deepEqual(await pda.readManifest(archive), {
     title: 'My Dat',
     description: 'This dat has a manifest!',
     type: ['foo', 'bar'],
-    url: `dat://${tutil.FAKE_DAT_KEY}`
+    url: `dat://${tutil.FAKE_DAT_KEY}`,
+    author: {
+      name: 'Bob',
+      url: 'dat://ffffffffffffffffffffffffffffffff'
+    }
   })
 
   await pda.updateManifest(archive, {
@@ -29,7 +37,39 @@ test('read/write/update manifest', async t => {
     title: 'My Dat!!',
     description: 'This dat has a manifest!',
     type: ['foo'],
-    url: `dat://${tutil.FAKE_DAT_KEY}`
+    url: `dat://${tutil.FAKE_DAT_KEY}`,
+    author: {
+      name: 'Bob',
+      url: 'dat://ffffffffffffffffffffffffffffffff'
+    }
+  })
+
+  await pda.updateManifest(archive, {
+    author: 'Robert'
+  })
+
+  t.deepEqual(await pda.readManifest(archive), {
+    title: 'My Dat!!',
+    description: 'This dat has a manifest!',
+    type: ['foo'],
+    url: `dat://${tutil.FAKE_DAT_KEY}`,
+    author: {
+      name: 'Robert'
+    }
+  })
+
+  await pda.updateManifest(archive, {
+    author: 'dat://ffffffffffffffffffffffffffffffff'
+  })
+
+  t.deepEqual(await pda.readManifest(archive), {
+    title: 'My Dat!!',
+    description: 'This dat has a manifest!',
+    type: ['foo'],
+    url: `dat://${tutil.FAKE_DAT_KEY}`,
+    author: {
+      url: 'dat://ffffffffffffffffffffffffffffffff'
+    }
   })
 })
 
