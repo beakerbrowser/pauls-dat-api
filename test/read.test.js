@@ -205,3 +205,32 @@ test('readdir recursive w/staging', async t => {
     'b'
   ])
 })
+
+test('readSize', async t => {
+  var archive1 = await tutil.createArchive([
+    'a'
+  ])
+  var archive2 = await tutil.createArchive([
+    'a',
+    'b/',
+    'b/a',
+    'b/b/',
+    'b/b/a',
+    'b/b/b',
+    'b/c/',
+    'c/',
+    'c/a',
+    'c/b'
+  ])
+
+  var size1 = await pda.readSize(archive1, '/')
+  var size2 = await pda.readSize(archive2, '/')
+
+  t.truthy(size1 > 0)
+  t.truthy(size2 > 0)
+  t.truthy(size2 > size1)
+
+  var size3 = await pda.readSize(archive2, '/b')
+
+  t.truthy(size3 > 0)
+})

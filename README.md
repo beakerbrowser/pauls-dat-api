@@ -39,6 +39,7 @@ var pda = require('pauls-dat-api/es5');
 - [Read](#read)
   - [readFile(archive, name[, opts, cb])](#readfilearchive-name-opts-cb)
   - [readdir(archive, path[, opts, cb])](#readdirarchive-path-opts-cb)
+  - [readSize(archive, path[, cb])](#readsizearchive-path-cb)
 - [Write](#write)
   - [writeFile(archive, name, data[, opts, cb])](#writefilearchive-name-data-opts-cb)
   - [mkdir(archive, name[, cb])](#mkdirarchive-name-cb)
@@ -215,6 +216,19 @@ console.log(listing) /* => [
   'assets/profile.png',
   'assets/styles.css'
 ]*/
+```
+
+### readSize(archive, path[, cb])
+
+ - `archive` Hyperdrive archive (object).
+ - `path` Target directory path (string).
+ - Returns a number (size in bytes).
+
+This method will recurse on folders.
+
+```js
+var size = await pda.readSize(archive, '/assets')
+console.log(size) // => 123
 ```
 
 ## Write
