@@ -23,7 +23,7 @@ test('exportFilesystemToArchive', async t => {
     dstArchive,
     inplaceImport: true
   })
-  var expectedAddedA = ['foo.txt', 'bar.data', 'subdir/foo.txt', 'subdir/bar.data'].map(n => path.join(srcPath, n))
+  var expectedAddedA = ['/foo.txt', '/bar.data', '/subdir/foo.txt', '/subdir/bar.data']
   statsA.addedFiles.sort(); expectedAddedA.sort()
   t.deepEqual(statsA.addedFiles, expectedAddedA)
   t.deepEqual(statsA.updatedFiles, [])
@@ -38,9 +38,10 @@ test('exportFilesystemToArchive', async t => {
     dstArchive,
     inplaceImport: true
   })
+  var expectedUpdatedB = ['/bar.data', '/foo.txt', '/subdir/bar.data', '/subdir/foo.txt']
   t.deepEqual(statsB.addedFiles, [])
-  t.deepEqual(statsB.updatedFiles, [])
-  t.deepEqual(statsB.skipCount, 4)
+  t.deepEqual(statsB.updatedFiles, expectedUpdatedB)
+  t.deepEqual(statsB.skipCount, 0)
   t.deepEqual(statsB.fileCount, 4)
 
   // make changes
@@ -51,25 +52,7 @@ test('exportFilesystemToArchive', async t => {
   fs.mkdirSync(path.join(srcPath, 'subdir2'))
   fs.writeFileSync(path.join(srcPath, 'subdir2', 'foo.txt'), 'content')
 
-  // 2 changes, 2 additions (dry run)
-  // =
-
-  const statsC = await pda.exportFilesystemToArchive({
-    srcPath,
-    dstArchive,
-    inplaceImport: true,
-    dryRun: true
-  })
-  var expectedAddedC = ['subdir2/foo.txt'].map(n => path.join(srcPath, n))
-  statsC.addedFiles.sort(); expectedAddedC.sort()
-  t.deepEqual(statsC.addedFiles, expectedAddedC)
-  var expectedUpdatedC = ['foo.txt', 'subdir/bar.data'].map(n => path.join(srcPath, n))
-  statsC.updatedFiles.sort(); expectedUpdatedC.sort()
-  t.deepEqual(statsC.updatedFiles, expectedUpdatedC)
-  t.deepEqual(statsC.skipCount, 2)
-  t.deepEqual(statsC.fileCount, 5)
-
-  // 2 changes, 2 additions (real run)
+  // 2 changes, 2 additions
   // =
 
   const statsD = await pda.exportFilesystemToArchive({
@@ -77,13 +60,13 @@ test('exportFilesystemToArchive', async t => {
     dstArchive,
     inplaceImport: true
   })
-  var expectedAddedD = ['subdir2/foo.txt'].map(n => path.join(srcPath, n))
+  var expectedAddedD = ['/subdir2/foo.txt']
   statsD.addedFiles.sort(); expectedAddedD.sort()
   t.deepEqual(statsD.addedFiles, expectedAddedD)
-  var expectedUpdatedD = ['foo.txt', 'subdir/bar.data'].map(n => path.join(srcPath, n))
+  var expectedUpdatedD = ['/bar.data', '/foo.txt', '/subdir/bar.data', '/subdir/foo.txt']
   statsD.updatedFiles.sort(); expectedUpdatedD.sort()
   t.deepEqual(statsD.updatedFiles, expectedUpdatedD)
-  t.deepEqual(statsD.skipCount, 2)
+  t.deepEqual(statsD.skipCount, 0)
   t.deepEqual(statsD.fileCount, 5)
 
   // into subdir
@@ -95,7 +78,7 @@ test('exportFilesystemToArchive', async t => {
     dstPath: '/subdir3',
     inplaceImport: true
   })
-  var expectedAddedE = ['foo.txt', 'bar.data', 'subdir/foo.txt', 'subdir/bar.data', 'subdir2/foo.txt'].map(n => path.join(srcPath, n))
+  var expectedAddedE = ['/subdir3/foo.txt', '/subdir3/bar.data', '/subdir3/subdir/foo.txt', '/subdir3/subdir/bar.data', '/subdir3/subdir2/foo.txt']
   statsE.addedFiles.sort(); expectedAddedE.sort()
   t.deepEqual(statsE.addedFiles, expectedAddedE)
   t.deepEqual(statsE.updatedFiles, [])
@@ -148,13 +131,12 @@ test('exportFilesystemToArchive w/staging', async t => {
     dstArchive: dstArchive.staging,
     inplaceImport: true
   })
-  var expectedAddedA = ['foo.txt', 'bar.data', 'subdir/foo.txt', 'subdir/bar.data'].map(n => path.join(srcPath, n))
+  var expectedAddedA = ['/foo.txt', '/bar.data', '/subdir/foo.txt', '/subdir/bar.data']
   statsA.addedFiles.sort(); expectedAddedA.sort()
   t.deepEqual(statsA.addedFiles, expectedAddedA)
   t.deepEqual(statsA.updatedFiles, [])
   t.deepEqual(statsA.skipCount, 0)
   t.deepEqual(statsA.fileCount, 4)
-  t.deepEqual((await pda.commit(dstArchive.staging)).length, 5)
 
   // no changes
   // =
@@ -164,9 +146,10 @@ test('exportFilesystemToArchive w/staging', async t => {
     dstArchive: dstArchive.staging,
     inplaceImport: true
   })
+  var expectedUpdatedB = ['/bar.data', '/foo.txt', '/subdir/bar.data', '/subdir/foo.txt']
   t.deepEqual(statsB.addedFiles, [])
-  t.deepEqual(statsB.updatedFiles, [])
-  t.deepEqual(statsB.skipCount, 4)
+  t.deepEqual(statsB.updatedFiles, expectedUpdatedB)
+  t.deepEqual(statsB.skipCount, 0)
   t.deepEqual(statsB.fileCount, 4)
 
   // make changes
@@ -177,26 +160,7 @@ test('exportFilesystemToArchive w/staging', async t => {
   fs.mkdirSync(path.join(srcPath, 'subdir2'))
   fs.writeFileSync(path.join(srcPath, 'subdir2', 'foo.txt'), 'content')
 
-  // 2 changes, 2 additions (dry run)
-  // =
-
-  const statsC = await pda.exportFilesystemToArchive({
-    srcPath,
-    dstArchive: dstArchive.staging,
-    inplaceImport: true,
-    dryRun: true
-  })
-  var expectedAddedC = ['subdir2/foo.txt'].map(n => path.join(srcPath, n))
-  statsC.addedFiles.sort(); expectedAddedC.sort()
-  t.deepEqual(statsC.addedFiles, expectedAddedC)
-  var expectedUpdatedC = ['foo.txt', 'subdir/bar.data'].map(n => path.join(srcPath, n))
-  statsC.updatedFiles.sort(); expectedUpdatedC.sort()
-  t.deepEqual(statsC.updatedFiles, expectedUpdatedC)
-  t.deepEqual(statsC.skipCount, 2)
-  t.deepEqual(statsC.fileCount, 5)
-  t.deepEqual((await pda.commit(dstArchive.staging)).length, 0)
-
-  // 2 changes, 2 additions (real run)
+  // 2 changes, 2 additions
   // =
 
   const statsD = await pda.exportFilesystemToArchive({
@@ -204,15 +168,14 @@ test('exportFilesystemToArchive w/staging', async t => {
     dstArchive: dstArchive.staging,
     inplaceImport: true
   })
-  var expectedAddedD = ['subdir2/foo.txt'].map(n => path.join(srcPath, n))
+  var expectedAddedD = ['/subdir2/foo.txt']
   statsD.addedFiles.sort(); expectedAddedD.sort()
   t.deepEqual(statsD.addedFiles, expectedAddedD)
-  var expectedUpdatedD = ['foo.txt', 'subdir/bar.data'].map(n => path.join(srcPath, n))
+  var expectedUpdatedD = ['/bar.data', '/foo.txt', '/subdir/bar.data', '/subdir/foo.txt']
   statsD.updatedFiles.sort(); expectedUpdatedD.sort()
   t.deepEqual(statsD.updatedFiles, expectedUpdatedD)
-  t.deepEqual(statsD.skipCount, 2)
+  t.deepEqual(statsD.skipCount, 0)
   t.deepEqual(statsD.fileCount, 5)
-  t.deepEqual((await pda.commit(dstArchive.staging)).length, 4)
 
   // into subdir
   // =
@@ -223,13 +186,12 @@ test('exportFilesystemToArchive w/staging', async t => {
     dstPath: '/subdir3',
     inplaceImport: true
   })
-  var expectedAddedE = ['foo.txt', 'bar.data', 'subdir/foo.txt', 'subdir/bar.data', 'subdir2/foo.txt'].map(n => path.join(srcPath, n))
+  var expectedAddedE = ['/subdir3/foo.txt', '/subdir3/bar.data', '/subdir3/subdir/foo.txt', '/subdir3/subdir/bar.data', '/subdir3/subdir2/foo.txt']
   statsE.addedFiles.sort(); expectedAddedE.sort()
   t.deepEqual(statsE.addedFiles, expectedAddedE)
   t.deepEqual(statsE.updatedFiles, [])
   t.deepEqual(statsE.skipCount, 0)
   t.deepEqual(statsE.fileCount, 5)
-  t.deepEqual((await pda.commit(dstArchive.staging)).length, 8)
 
   // into bad dest
   // =

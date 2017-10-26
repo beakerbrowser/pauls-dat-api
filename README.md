@@ -425,12 +425,9 @@ events.on('sync', args => {
  - `opts.dstPath` Destination path within the archive. Optional, defaults to '/'.
  - `opts.ignore` Files not to copy (array of strings). Optional. Uses [anymatch](npm.im/anymatch).
  - `opts.inplaceImport` Should import source directory in-place? (boolean). If true and importing a directory, this will cause the directory's content to be copied directy into the `dstPath`. If false, will cause the source-directory to become a child of the `dstPath`.
- - `opts.dryRun` Don't actually copy (boolean). If true, will run all export logic without actually modifying the target archive.
  - Returns stats on the export.
 
 Copies a file-tree into an archive.
-
-The `dryRun` opt is useful because this method compares the source files to the destination before copying. Therefore the stats returned by a dry run gives you a file-level diff.
 
 ```js
 var stats = await pda.exportFilesystemToArchive({
