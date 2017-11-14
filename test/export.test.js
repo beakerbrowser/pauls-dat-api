@@ -25,7 +25,7 @@ test('exportFilesystemToArchive', async t => {
   })
   var expectedAddedA = ['/foo.txt', '/bar.data', '/subdir/foo.txt', '/subdir/bar.data']
   statsA.addedFiles.sort(); expectedAddedA.sort()
-  t.deepEqual(statsA.addedFiles, expectedAddedA)
+  t.deepEqual(statsA.addedFiles.map(tutil.tonix), expectedAddedA)
   t.deepEqual(statsA.updatedFiles, [])
   t.deepEqual(statsA.skipCount, 0)
   t.deepEqual(statsA.fileCount, 4)
@@ -40,7 +40,7 @@ test('exportFilesystemToArchive', async t => {
   })
   var expectedUpdatedB = ['/bar.data', '/foo.txt', '/subdir/bar.data', '/subdir/foo.txt']
   t.deepEqual(statsB.addedFiles, [])
-  t.deepEqual(statsB.updatedFiles, expectedUpdatedB)
+  t.deepEqual(statsB.updatedFiles.map(tutil.tonix), expectedUpdatedB)
   t.deepEqual(statsB.skipCount, 0)
   t.deepEqual(statsB.fileCount, 4)
 
@@ -62,10 +62,10 @@ test('exportFilesystemToArchive', async t => {
   })
   var expectedAddedD = ['/subdir2/foo.txt']
   statsD.addedFiles.sort(); expectedAddedD.sort()
-  t.deepEqual(statsD.addedFiles, expectedAddedD)
+  t.deepEqual(statsD.addedFiles.map(tutil.tonix), expectedAddedD)
   var expectedUpdatedD = ['/bar.data', '/foo.txt', '/subdir/bar.data', '/subdir/foo.txt']
   statsD.updatedFiles.sort(); expectedUpdatedD.sort()
-  t.deepEqual(statsD.updatedFiles, expectedUpdatedD)
+  t.deepEqual(statsD.updatedFiles.map(tutil.tonix), expectedUpdatedD)
   t.deepEqual(statsD.skipCount, 0)
   t.deepEqual(statsD.fileCount, 5)
 
@@ -79,6 +79,7 @@ test('exportFilesystemToArchive', async t => {
     inplaceImport: true
   })
   var expectedAddedE = ['/subdir3/foo.txt', '/subdir3/bar.data', '/subdir3/subdir/foo.txt', '/subdir3/subdir/bar.data', '/subdir3/subdir2/foo.txt']
+  statsE.addedFiles = statsE.addedFiles.map(tutil.tonix)
   statsE.addedFiles.sort(); expectedAddedE.sort()
   t.deepEqual(statsE.addedFiles, expectedAddedE)
   t.deepEqual(statsE.updatedFiles, [])
@@ -95,7 +96,7 @@ test('exportFilesystemToArchive', async t => {
     dstPath: '/subdir4',
     inplaceImport: true
   })
-  t.deepEqual(statsF.addedFiles, ['/subdir4/foo.txt'])
+  t.deepEqual(statsF.addedFiles.map(tutil.tonix), ['/subdir4/foo.txt'])
   t.deepEqual(statsF.updatedFiles, [])
   t.deepEqual(statsF.skipCount, 0)
   t.deepEqual(statsF.fileCount, 1)  
@@ -149,7 +150,7 @@ test('exportFilesystemToArchive w/staging', async t => {
   })
   var expectedAddedA = ['/foo.txt', '/bar.data', '/subdir/foo.txt', '/subdir/bar.data']
   statsA.addedFiles.sort(); expectedAddedA.sort()
-  t.deepEqual(statsA.addedFiles, expectedAddedA)
+  t.deepEqual(statsA.addedFiles.map(tutil.tonix), expectedAddedA)
   t.deepEqual(statsA.updatedFiles, [])
   t.deepEqual(statsA.skipCount, 0)
   t.deepEqual(statsA.fileCount, 4)
@@ -164,7 +165,7 @@ test('exportFilesystemToArchive w/staging', async t => {
   })
   var expectedUpdatedB = ['/bar.data', '/foo.txt', '/subdir/bar.data', '/subdir/foo.txt']
   t.deepEqual(statsB.addedFiles, [])
-  t.deepEqual(statsB.updatedFiles, expectedUpdatedB)
+  t.deepEqual(statsB.updatedFiles.map(tutil.tonix), expectedUpdatedB)
   t.deepEqual(statsB.skipCount, 0)
   t.deepEqual(statsB.fileCount, 4)
 
@@ -186,10 +187,10 @@ test('exportFilesystemToArchive w/staging', async t => {
   })
   var expectedAddedD = ['/subdir2/foo.txt']
   statsD.addedFiles.sort(); expectedAddedD.sort()
-  t.deepEqual(statsD.addedFiles, expectedAddedD)
+  t.deepEqual(statsD.addedFiles.map(tutil.tonix), expectedAddedD)
   var expectedUpdatedD = ['/bar.data', '/foo.txt', '/subdir/bar.data', '/subdir/foo.txt']
   statsD.updatedFiles.sort(); expectedUpdatedD.sort()
-  t.deepEqual(statsD.updatedFiles, expectedUpdatedD)
+  t.deepEqual(statsD.updatedFiles.map(tutil.tonix), expectedUpdatedD)
   t.deepEqual(statsD.skipCount, 0)
   t.deepEqual(statsD.fileCount, 5)
 
@@ -203,6 +204,7 @@ test('exportFilesystemToArchive w/staging', async t => {
     inplaceImport: true
   })
   var expectedAddedE = ['/subdir3/foo.txt', '/subdir3/bar.data', '/subdir3/subdir/foo.txt', '/subdir3/subdir/bar.data', '/subdir3/subdir2/foo.txt']
+  statsE.addedFiles = statsE.addedFiles.map(tutil.tonix)
   statsE.addedFiles.sort(); expectedAddedE.sort()
   t.deepEqual(statsE.addedFiles, expectedAddedE)
   t.deepEqual(statsE.updatedFiles, [])
@@ -219,7 +221,7 @@ test('exportFilesystemToArchive w/staging', async t => {
     dstPath: '/subdir4',
     inplaceImport: true
   })
-  t.deepEqual(statsF.addedFiles, ['/subdir4/foo.txt'])
+  t.deepEqual(statsF.addedFiles.map(tutil.tonix), ['/subdir4/foo.txt'])
   t.deepEqual(statsF.updatedFiles, [])
   t.deepEqual(statsF.skipCount, 0)
   t.deepEqual(statsF.fileCount, 1)  

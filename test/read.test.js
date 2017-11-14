@@ -128,7 +128,7 @@ test('readdir recursive', async t => {
     'c/b'
   ])
 
-  t.deepEqual((await pda.readdir(archive, '/', {recursive: true})).sort(), [
+  t.deepEqual((await pda.readdir(archive, '/', {recursive: true})).map(tutil.tonix).sort(), [
     'a',
     'b',
     'b/a',
@@ -141,7 +141,7 @@ test('readdir recursive', async t => {
     'c/b'
   ])
 
-  t.deepEqual((await pda.readdir(archive, '/b', {recursive: true})).sort(), [
+  t.deepEqual((await pda.readdir(archive, '/b', {recursive: true})).map(tutil.tonix).map(stripPrecedingSlash).sort(), [
     'a',
     'b',
     'b/a',
@@ -149,12 +149,12 @@ test('readdir recursive', async t => {
     'c'
   ])
 
-  t.deepEqual((await pda.readdir(archive, '/b/b', {recursive: true})).sort(), [
+  t.deepEqual((await pda.readdir(archive, '/b/b', {recursive: true})).map(tutil.tonix).sort(), [
     'a',
     'b'
   ])
 
-  t.deepEqual((await pda.readdir(archive, '/c', {recursive: true})).sort(), [
+  t.deepEqual((await pda.readdir(archive, '/c', {recursive: true})).map(tutil.tonix).sort(), [
     'a',
     'b'
   ])
@@ -174,7 +174,7 @@ test('readdir recursive w/staging', async t => {
     'c/b'
   ], {staging: true})
 
-  t.deepEqual((await pda.readdir(archive.staging, '/', {recursive: true})).sort(), [
+  t.deepEqual((await pda.readdir(archive.staging, '/', {recursive: true})).map(tutil.tonix).sort(), [
     'a',
     'b',
     'b/a',
@@ -187,7 +187,7 @@ test('readdir recursive w/staging', async t => {
     'c/b'
   ])
 
-  t.deepEqual((await pda.readdir(archive.staging, '/b', {recursive: true})).sort(), [
+  t.deepEqual((await pda.readdir(archive.staging, '/b', {recursive: true})).map(tutil.tonix).map(stripPrecedingSlash).sort(), [
     'a',
     'b',
     'b/a',
@@ -195,12 +195,12 @@ test('readdir recursive w/staging', async t => {
     'c'
   ])
 
-  t.deepEqual((await pda.readdir(archive.staging, '/b/b', {recursive: true})).sort(), [
+  t.deepEqual((await pda.readdir(archive.staging, '/b/b', {recursive: true})).map(tutil.tonix).sort(), [
     'a',
     'b'
   ])
 
-  t.deepEqual((await pda.readdir(archive.staging, '/c', {recursive: true})).sort(), [
+  t.deepEqual((await pda.readdir(archive.staging, '/c', {recursive: true})).map(tutil.tonix).sort(), [
     'a',
     'b'
   ])
@@ -234,3 +234,9 @@ test('readSize', async t => {
 
   t.truthy(size3 > 0)
 })
+
+
+function stripPrecedingSlash (str) {
+  if (str.charAt(0) == '/') return str.slice(1)
+  return str
+}

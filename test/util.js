@@ -45,4 +45,8 @@ function tmpdir () {
   return fs.mkdtempSync(os.tmpdir() + path.sep + 'pauls-dat-api-test-')
 }
 
-module.exports = {FAKE_DAT_KEY, createArchive, tmpdir}
+function tonix (str) {
+  return str.replace(/\\/g, '/')
+}
+
+module.exports = {FAKE_DAT_KEY, createArchive, tmpdir, tonix}

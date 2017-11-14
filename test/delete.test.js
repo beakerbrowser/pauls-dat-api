@@ -19,7 +19,7 @@ test('unlink', async t => {
   await t.throws(pda.stat(archive, 'b/a'))
   await pda.unlink(archive, '/c/b/a')
   await t.throws(pda.stat(archive, '/c/b/a'))
-  t.deepEqual((await pda.readdir(archive, '/', {recursive: true})).sort(), ['b', 'c', 'c/b'])
+  t.deepEqual((await pda.readdir(archive, '/', {recursive: true})).sort().map(tutil.tonix), ['b', 'c', 'c/b'])
 })
 
 test('unlink NotFoundError, NotAFileError', async t => {
@@ -72,7 +72,7 @@ test('rmdir recursive', async t => {
   ])
 
   await pda.rmdir(archive, 'b', {recursive: true})
-  t.deepEqual((await pda.readdir(archive, '/', {recursive: true})).sort(), ['a', 'c', 'c/b'])
+  t.deepEqual((await pda.readdir(archive, '/', {recursive: true})).map(tutil.tonix).sort(), ['a', 'c', 'c/b'])
 })
 
 test('rmdir NotFoundError, NotAFolderError, DestDirectoryNotEmpty', async t => {
@@ -118,13 +118,13 @@ test('unlink w/staging', async t => {
   await t.throws(pda.stat(archive.staging, 'b/a'))
   await pda.unlink(archive.staging, '/c/b/a')
   await t.throws(pda.stat(archive.staging, '/c/b/a'))
-  t.deepEqual((await pda.readdir(archive.staging, '/', {recursive: true})).sort(), ['b', 'c', 'c/b'])
+  t.deepEqual((await pda.readdir(archive.staging, '/', {recursive: true})).map(tutil.tonix).sort(), ['b', 'c', 'c/b'])
 
   await pda.commit(archive.staging)
   await t.throws(pda.stat(archive, '/a'))
   await t.throws(pda.stat(archive, 'b/a'))
   await t.throws(pda.stat(archive, '/c/b/a'))
-  t.deepEqual((await pda.readdir(archive, '/', {recursive: true})).sort(), ['b', 'c', 'c/b'])
+  t.deepEqual((await pda.readdir(archive, '/', {recursive: true})).map(tutil.tonix).sort(), ['b', 'c', 'c/b'])
 })
 
 test('unlink NotFoundError, NotAFileError w/staging', async t => {
@@ -180,10 +180,10 @@ test('rmdir recursive w/staging', async t => {
   ], {staging: true})
 
   await pda.rmdir(archive.staging, 'b', {recursive: true})
-  t.deepEqual((await pda.readdir(archive.staging, '/', {recursive: true})).sort(), ['a', 'c', 'c/b'])
+  t.deepEqual((await pda.readdir(archive.staging, '/', {recursive: true})).map(tutil.tonix).sort(), ['a', 'c', 'c/b'])
 
   await pda.commit(archive.staging)
-  t.deepEqual((await pda.readdir(archive, '/', {recursive: true})).sort(), ['a', 'c', 'c/b'])
+  t.deepEqual((await pda.readdir(archive, '/', {recursive: true})).sort().map(tutil.tonix), ['a', 'c', 'c/b'])
 })
 
 test('rmdir NotFoundError, NotAFolderError, DestDirectoryNotEmpty w/staging', async t => {
