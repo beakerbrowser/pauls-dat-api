@@ -85,6 +85,22 @@ test('exportFilesystemToArchive', async t => {
   t.deepEqual(statsE.skipCount, 0)
   t.deepEqual(statsE.fileCount, 5)
 
+  // dont overwrite folders with files
+  // =
+
+  await pda.mkdir(dstArchive, '/subdir4')
+  const statsF = await pda.exportFilesystemToArchive({
+    srcPath: path.join(srcPath, 'foo.txt'),
+    dstArchive,
+    dstPath: '/subdir4',
+    inplaceImport: true
+  })
+  t.deepEqual(statsF.addedFiles, ['/subdir4/foo.txt'])
+  t.deepEqual(statsF.updatedFiles, [])
+  t.deepEqual(statsF.skipCount, 0)
+  t.deepEqual(statsF.fileCount, 1)  
+  t.deepEqual(await pda.readdir(dstArchive, '/subdir4'), ['foo.txt'])
+
   // into bad dest
   // =
 
@@ -192,6 +208,22 @@ test('exportFilesystemToArchive w/staging', async t => {
   t.deepEqual(statsE.updatedFiles, [])
   t.deepEqual(statsE.skipCount, 0)
   t.deepEqual(statsE.fileCount, 5)
+  
+  // dont overwrite folders with files
+  // =
+
+  await pda.mkdir(dstArchive, '/subdir4')
+  const statsF = await pda.exportFilesystemToArchive({
+    srcPath: path.join(srcPath, 'foo.txt'),
+    dstArchive,
+    dstPath: '/subdir4',
+    inplaceImport: true
+  })
+  t.deepEqual(statsF.addedFiles, ['/subdir4/foo.txt'])
+  t.deepEqual(statsF.updatedFiles, [])
+  t.deepEqual(statsF.skipCount, 0)
+  t.deepEqual(statsF.fileCount, 1)  
+  t.deepEqual(await pda.readdir(dstArchive, '/subdir4'), ['foo.txt'])
 
   // into bad dest
   // =
