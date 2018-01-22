@@ -549,8 +549,10 @@ Helper to generate a manifest object. Opts in detail:
   url: String, the dat's url
   title: String
   description: String
-  type: Array<String>,
+  type: Array<String>
   author: String | Object{name: String, url: String}
+  web_root: String
+  fallback_page: String
 }
 ```
 
