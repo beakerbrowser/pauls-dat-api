@@ -11,6 +11,7 @@ test('read/write/update manifest', async t => {
     title: 'My Dat',
     description: 'This dat has a manifest!',
     type: 'foo bar',
+    repository: 'https://github.com/pfrazee/pauls-dat-api.git',
     author: {
       name: 'Bob',
       url: 'dat://ffffffffffffffffffffffffffffffff'
@@ -21,6 +22,7 @@ test('read/write/update manifest', async t => {
     title: 'My Dat',
     description: 'This dat has a manifest!',
     type: ['foo', 'bar'],
+    repository: 'https://github.com/pfrazee/pauls-dat-api.git',
     url: `dat://${tutil.FAKE_DAT_KEY}`,
     author: {
       name: 'Bob',
@@ -37,6 +39,7 @@ test('read/write/update manifest', async t => {
     title: 'My Dat!!',
     description: 'This dat has a manifest!',
     type: ['foo'],
+    repository: 'https://github.com/pfrazee/pauls-dat-api.git',
     url: `dat://${tutil.FAKE_DAT_KEY}`,
     author: {
       name: 'Bob',
@@ -52,6 +55,7 @@ test('read/write/update manifest', async t => {
     title: 'My Dat!!',
     description: 'This dat has a manifest!',
     type: ['foo'],
+    repository: 'https://github.com/pfrazee/pauls-dat-api.git',
     url: `dat://${tutil.FAKE_DAT_KEY}`,
     author: {
       name: 'Robert'
@@ -66,6 +70,7 @@ test('read/write/update manifest', async t => {
     title: 'My Dat!!',
     description: 'This dat has a manifest!',
     type: ['foo'],
+    repository: 'https://github.com/pfrazee/pauls-dat-api.git',
     url: `dat://${tutil.FAKE_DAT_KEY}`,
     author: {
       url: 'dat://ffffffffffffffffffffffffffffffff'
