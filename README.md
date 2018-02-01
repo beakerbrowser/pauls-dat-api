@@ -39,6 +39,7 @@ var pda = require('pauls-dat-api/es5');
 - [Read](#read)
   - [readFile(archive, name[, opts, cb])](#readfilearchive-name-opts-cb)
   - [readdir(archive, path[, opts, cb])](#readdirarchive-path-opts-cb)
+  - [createReaddirStream(archive[, path, opts])](#createreaddirstreamarchive-path-opts)
   - [readSize(archive, path[, cb])](#readsizearchive-path-cb)
 - [Write](#write)
   - [writeFile(archive, name, data[, opts, cb])](#writefilearchive-name-data-opts-cb)
@@ -216,6 +217,35 @@ console.log(listing) /* => [
   'assets/profile.png',
   'assets/styles.css'
 ]*/
+```
+
+### createReaddirStream(archive[, path, opts])
+
+ - `archive` Hyperdrive archive (object).
+ - `path` Target directory path (string), defaults to `/`.
+ - `opts.recursive` Read all subfolders and their files as well?
+ - `opts.maxDepth` Limit the depth until which to look into folders.
+ - `opts.depthFirst` Using a [depth-first search](https://en.wikipedia.org/wiki/Depth-first_search) instead of the default [breadth-first search](https://en.wikipedia.org/wiki/Breadth-first_search).
+ - Returns a [readable stream](https://nodejs.org/api/stream.html#stream_class_stream_readable) in [`Object Mode`](https://nodejs.org/api/stream.html#stream_object_mode). The payload per entry is an object:
+     - `entry.location` The path of the entry
+     - `entry.stats` A [Stats](https://nodejs.org/api/fs.html#fs_class_fs_stats) object for that path
+
+```js
+var stream = pda.createReaddirStream(archive, '/assets')
+stream.on('data', ({location, stat}) => {
+  console.log(location) // => 'profile.png', 'styles.css'
+  console.log(stat.isDirectory()) // => false, false
+})
+
+var stream = pda.createReaddirStream(archive, { recursive: true })
+stream.on('data', ({location, stat}) => {
+  console.log(location) // => 'assets', 'index.html', 'assets/profile.png', 'assets/styles.css'
+})
+
+var stream = pda.createReaddirStream(archive, { recursive: true, depthFirst: true })
+stream.on('data', ({location, stat}) => {
+  console.log(location) // => 'assets', 'assets/profile.png', 'assets/styles.css', 'index.html'
+})
 ```
 
 ### readSize(archive, path[, cb])
