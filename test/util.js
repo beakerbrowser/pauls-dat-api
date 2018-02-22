@@ -1,4 +1,3 @@
-const co = require('co')
 const hyperdrive = require('hyperdrive')
 const ScopedFS = require('scoped-fs')
 const fs = require('fs')
