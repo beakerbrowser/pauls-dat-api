@@ -102,67 +102,58 @@ test('ArchiveNotWritableError', async t => {
   t.truthy(err2.archiveNotWritable)
 })
 
-test('unlink w/staging', async t => {
-  var archive = await tutil.createArchive([
+test('unlink w/fs', async t => {
+  var fs = await tutil.createFs([
     'a',
     'b/',
     'b/a',
     'c/',
     'c/b/',
     'c/b/a'
-  ], {staging: true})
+  ])
 
-  await pda.unlink(archive.staging, '/a')
-  await t.throws(pda.stat(archive.staging, '/a'))
-  await pda.unlink(archive.staging, 'b/a')
-  await t.throws(pda.stat(archive.staging, 'b/a'))
-  await pda.unlink(archive.staging, '/c/b/a')
-  await t.throws(pda.stat(archive.staging, '/c/b/a'))
-  t.deepEqual((await pda.readdir(archive.staging, '/', {recursive: true})).map(tutil.tonix).sort(), ['b', 'c', 'c/b'])
-
-  await pda.commit(archive.staging)
-  await t.throws(pda.stat(archive, '/a'))
-  await t.throws(pda.stat(archive, 'b/a'))
-  await t.throws(pda.stat(archive, '/c/b/a'))
-  t.deepEqual((await pda.readdir(archive, '/', {recursive: true})).map(tutil.tonix).sort(), ['b', 'c', 'c/b'])
+  await pda.unlink(fs, '/a')
+  await t.throws(pda.stat(fs, '/a'))
+  await pda.unlink(fs, 'b/a')
+  await t.throws(pda.stat(fs, 'b/a'))
+  await pda.unlink(fs, '/c/b/a')
+  await t.throws(pda.stat(fs, '/c/b/a'))
+  t.deepEqual((await pda.readdir(fs, '/', {recursive: true})).sort().map(tutil.tonix), ['b', 'c', 'c/b'])
 })
 
-test('unlink NotFoundError, NotAFileError w/staging', async t => {
-  var archive = await tutil.createArchive([
+test('unlink NotFoundError, NotAFileError w/fs', async t => {
+  var fs = await tutil.createFs([
     'a',
     'b/',
     'b/a',
     'c/',
     'c/b/',
     'c/b/a'
-  ], {staging: true})
+  ])
 
-  const err1 = await t.throws(pda.unlink(archive.staging, '/bar'))
+  const err1 = await t.throws(pda.unlink(fs, '/bar'))
   t.truthy(err1.notFound)
-  const err2 = await t.throws(pda.unlink(archive.staging, '/b'))
+  const err2 = await t.throws(pda.unlink(fs, '/b'))
   t.truthy(err2.notAFile)
 })
 
-test('rmdir w/staging', async t => {
-  var archive = await tutil.createArchive([
+test('rmdir w/fs', async t => {
+  var fs = await tutil.createFs([
     'a',
     'b/',
     'b/a/',
     'c/',
     'c/b/'
-  ], {staging: true})
+  ])
 
-  await pda.rmdir(archive.staging, 'b/a')
-  await pda.rmdir(archive.staging, 'b')
-  await pda.rmdir(archive.staging, 'c/b')
-  t.deepEqual((await pda.readdir(archive.staging, '/', {recursive: true})).sort(), ['a', 'c'])
-
-  await pda.commit(archive.staging)
-  t.deepEqual((await pda.readdir(archive, '/', {recursive: true})).sort(), ['a', 'c'])
+  await pda.rmdir(fs, 'b/a')
+  await pda.rmdir(fs, 'b')
+  await pda.rmdir(fs, 'c/b')
+  t.deepEqual((await pda.readdir(fs, '/', {recursive: true})).sort(), ['a', 'c'])
 })
 
-test('rmdir recursive w/staging', async t => {
-  var archive = await tutil.createArchive([
+test('rmdir recursive w/fs', async t => {
+  var fs = await tutil.createFs([
     'a',
     'b/',
     'b/a/',
@@ -177,28 +168,25 @@ test('rmdir recursive w/staging', async t => {
     'b/d/d',
     'c/',
     'c/b/'
-  ], {staging: true})
+  ])
 
-  await pda.rmdir(archive.staging, 'b', {recursive: true})
-  t.deepEqual((await pda.readdir(archive.staging, '/', {recursive: true})).map(tutil.tonix).sort(), ['a', 'c', 'c/b'])
-
-  await pda.commit(archive.staging)
-  t.deepEqual((await pda.readdir(archive, '/', {recursive: true})).sort().map(tutil.tonix), ['a', 'c', 'c/b'])
+  await pda.rmdir(fs, 'b', {recursive: true})
+  t.deepEqual((await pda.readdir(fs, '/', {recursive: true})).map(tutil.tonix).sort(), ['a', 'c', 'c/b'])
 })
 
-test('rmdir NotFoundError, NotAFolderError, DestDirectoryNotEmpty w/staging', async t => {
-  var archive = await tutil.createArchive([
+test('rmdir NotFoundError, NotAFolderError, DestDirectoryNotEmpty w/fs', async t => {
+  var fs = await tutil.createFs([
     'a',
     'b/',
     'b/a/',
     'c/',
     'c/b/'
-  ], {staging: true})
+  ])
 
-  const err1 = await t.throws(pda.rmdir(archive.staging, '/bar'))
+  const err1 = await t.throws(pda.rmdir(fs, '/bar'))
   t.truthy(err1.notFound)
-  const err2 = await t.throws(pda.rmdir(archive.staging, '/a'))
+  const err2 = await t.throws(pda.rmdir(fs, '/a'))
   t.truthy(err2.notAFolder)
-  const err3 = await t.throws(pda.rmdir(archive.staging, '/b'))
+  const err3 = await t.throws(pda.rmdir(fs, '/b'))
   t.truthy(err3.destDirectoryNotEmpty)
 })

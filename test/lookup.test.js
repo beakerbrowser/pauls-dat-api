@@ -57,17 +57,17 @@ test(stat, 'baz', true)
 test(stat, '/baz', true)
 test(stat, 'notfound', false)
 
-// without preceding slashes w/staging
+// without preceding slashes w/fs
 // =
 
-stat.title = (_, given, expected) => `stat(${given}) is ${expected ? 'found' : 'not found'} (staging)`
-test('create archive w/staging', async t => {
-  target = await tutil.createArchive([
+stat.title = (_, given, expected) => `stat(${given}) is ${expected ? 'found' : 'not found'} (fs)`
+test('create archive w/fs', async t => {
+  target = await tutil.createFs([
     'foo',
     'subdir/',
     'subdir/bar',
     'baz'
-  ], {staging: true})
+  ])
 })
 
 test(stat, 'foo', true)
@@ -78,17 +78,17 @@ test(stat, 'baz', true)
 test(stat, '/baz', true)
 test(stat, 'notfound', false)
 
-// with preceding slashes w/staging
+// with preceding slashes w/fs
 // =
 
-stat.title = (_, given, expected) => `stat(${given}) is ${expected ? 'found' : 'not found'} (staging)`
-test('create archive w/staging', async t => {
-  target = (await tutil.createArchive([
+stat.title = (_, given, expected) => `stat(${given}) is ${expected ? 'found' : 'not found'} (fs)`
+test('create archive w/fs', async t => {
+  target = await tutil.createFs([
     '/foo',
     '/subdir/',
     '/subdir/bar',
     '/baz'
-  ], {staging: true})).staging
+  ])
 })
 
 test(stat, 'foo', true)

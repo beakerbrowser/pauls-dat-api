@@ -1,44 +1,40 @@
 const co = require('co')
 const hyperdrive = require('hyperdrive')
-const hyperstaging = require('hyperdrive-staging-area')
+const ScopedFS = require('scoped-fs')
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
 
 const FAKE_DAT_KEY = 'f'.repeat(64)
 
-function createArchive (names, {staging} = {}) {
-  names = names || []
-  var archive = hyperdrive(tmpdir())
-  var target = archive
-  if (staging) {
-    archive.staging = hyperstaging(archive, tmpdir())
-    target = archive.staging
-  }
-  return co(function* () {
-    for (var i = 0; i < names.length; i++) {
-      let name = names[i]
-      let content = 'content'
-      if (typeof name === 'object') {
-        content = name.content
-        name = name.name
-      }
+function createArchive (names) {
+  return populate(hyperdrive(tmpdir()), names)
+}
 
-      yield new Promise(resolve => {
-        if (name.slice(-1) === '/') {
-          target.mkdir(name, resolve)
-        } else {
-          target.writeFile(name, content, resolve)
-        }
-      })
+function createFs (names) {
+  return populate(new ScopedFS(tmpdir()), names)
+}
+
+async function populate (target, names) {
+  names = names || []
+  for (var i = 0; i < names.length; i++) {
+    let name = names[i]
+    let content = 'content'
+    if (typeof name === 'object') {
+      content = name.content
+      name = name.name
     }
-  }).then(() => new Promise(resolve => {
-    if (staging) {
-      archive.staging.commit((err, changes) => resolve(archive))
-    } else {
-      resolve(archive)
-    }
-  }))
+
+    await new Promise(resolve => {
+      if (name.slice(-1) === '/') {
+        target.mkdir(name, resolve)
+      } else {
+        target.writeFile(name, content, resolve)
+      }
+    })
+  }
+
+  return target
 }
 
 function tmpdir () {
@@ -49,4 +45,4 @@ function tonix (str) {
   return str.replace(/\\/g, '/')
 }
 
-module.exports = {FAKE_DAT_KEY, createArchive, tmpdir, tonix}
+module.exports = {FAKE_DAT_KEY, createArchive, createFs, tmpdir, tonix}

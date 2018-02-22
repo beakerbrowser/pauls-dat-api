@@ -19,20 +19,20 @@ test('writeFile', async t => {
   t.deepEqual(await pda.readFile(archive, 'foo', 'buffer'), Buffer.from([0x03]))
 })
 
-test('writeFile w/staging', async t => {
-  var archive = await tutil.createArchive([
+test('writeFile w/fs', async t => {
+  var fs = await tutil.createFs([
     'foo'
-  ], {staging: true})
+  ])
 
-  t.deepEqual(await pda.readFile(archive.staging, 'foo'), 'content')
-  await pda.writeFile(archive.staging, '/foo', 'new content')
-  t.deepEqual(await pda.readFile(archive.staging, 'foo'), 'new content')
-  await pda.writeFile(archive.staging, 'foo', Buffer.from([0x01]))
-  t.deepEqual(await pda.readFile(archive.staging, 'foo', 'buffer'), Buffer.from([0x01]))
-  await pda.writeFile(archive.staging, 'foo', '02', 'hex')
-  t.deepEqual(await pda.readFile(archive.staging, 'foo', 'buffer'), Buffer.from([0x02]))
-  await pda.writeFile(archive.staging, 'foo', 'Aw==', { encoding: 'base64' })
-  t.deepEqual(await pda.readFile(archive.staging, 'foo', 'buffer'), Buffer.from([0x03]))
+  t.deepEqual(await pda.readFile(fs, 'foo'), 'content')
+  await pda.writeFile(fs, '/foo', 'new content')
+  t.deepEqual(await pda.readFile(fs, 'foo'), 'new content')
+  await pda.writeFile(fs, 'foo', Buffer.from([0x01]))
+  t.deepEqual(await pda.readFile(fs, 'foo', 'buffer'), Buffer.from([0x01]))
+  await pda.writeFile(fs, 'foo', '02', 'hex')
+  t.deepEqual(await pda.readFile(fs, 'foo', 'buffer'), Buffer.from([0x02]))
+  await pda.writeFile(fs, 'foo', 'Aw==', { encoding: 'base64' })
+  t.deepEqual(await pda.readFile(fs, 'foo', 'buffer'), Buffer.from([0x03]))
 })
 
 test('mkdir', async t => {
@@ -45,14 +45,14 @@ test('mkdir', async t => {
   t.deepEqual((await pda.stat(archive, '/bar')).isDirectory(), true)
 })
 
-test('mkdir w/staging', async t => {
-  var archive = await tutil.createArchive([
+test('mkdir w/fs', async t => {
+  var fs = await tutil.createFs([
     'foo'
-  ], {staging: true})
+  ])
 
-  await pda.mkdir(archive.staging, '/bar')
-  t.deepEqual((await pda.readdir(archive.staging, '/')).sort(), ['bar', 'foo'])
-  t.deepEqual((await pda.stat(archive.staging, '/bar')).isDirectory(), true)
+  await pda.mkdir(fs, '/bar')
+  t.deepEqual((await pda.readdir(fs, '/')).sort(), ['bar', 'foo'])
+  t.deepEqual((await pda.stat(fs, '/bar')).isDirectory(), true)
 })
 
 test('copy', async t => {
@@ -88,8 +88,8 @@ test('copy', async t => {
   t.deepEqual(await pda.readFile(archive, 'c/c'), 'content')
 })
 
-test('copy w/staging', async t => {
-  var archive = await tutil.createArchive([
+test('copy w/fs', async t => {
+  var fs = await tutil.createFs([
     {name: 'a', content: 'thecopy'},
     'b/',
     'b/a',
@@ -99,26 +99,26 @@ test('copy w/staging', async t => {
     'b/b/c',
     'b/c',
     'c/'
-  ], {staging: true})
+  ])
 
-  await pda.copy(archive.staging, '/a', '/a-copy')
-  t.deepEqual(await pda.readFile(archive.staging, '/a-copy'), 'thecopy')
-  t.deepEqual((await pda.stat(archive.staging, '/a-copy')).isFile(), true)
+  await pda.copy(fs, '/a', '/a-copy')
+  t.deepEqual(await pda.readFile(fs, '/a-copy'), 'thecopy')
+  t.deepEqual((await pda.stat(fs, '/a-copy')).isFile(), true)
 
-  await pda.copy(archive.staging, '/b', '/b-copy')
-  t.deepEqual((await pda.stat(archive.staging, '/b-copy')).isDirectory(), true)
-  t.deepEqual(await pda.readFile(archive.staging, '/b-copy/a'), 'content')
-  t.deepEqual((await pda.stat(archive.staging, '/b-copy/b')).isDirectory(), true)
-  t.deepEqual(await pda.readFile(archive.staging, '/b-copy/b/a'), 'content')
-  t.deepEqual(await pda.readFile(archive.staging, '/b-copy/b/b'), 'content')
-  t.deepEqual(await pda.readFile(archive.staging, '/b-copy/b/c'), 'content')
-  t.deepEqual(await pda.readFile(archive.staging, '/b-copy/c'), 'content')
+  await pda.copy(fs, '/b', '/b-copy')
+  t.deepEqual((await pda.stat(fs, '/b-copy')).isDirectory(), true)
+  t.deepEqual(await pda.readFile(fs, '/b-copy/a'), 'content')
+  t.deepEqual((await pda.stat(fs, '/b-copy/b')).isDirectory(), true)
+  t.deepEqual(await pda.readFile(fs, '/b-copy/b/a'), 'content')
+  t.deepEqual(await pda.readFile(fs, '/b-copy/b/b'), 'content')
+  t.deepEqual(await pda.readFile(fs, '/b-copy/b/c'), 'content')
+  t.deepEqual(await pda.readFile(fs, '/b-copy/c'), 'content')
 
-  await pda.copy(archive.staging, '/b/b', '/c')
-  t.deepEqual((await pda.stat(archive.staging, '/c')).isDirectory(), true)
-  t.deepEqual(await pda.readFile(archive.staging, 'c/a'), 'content')
-  t.deepEqual(await pda.readFile(archive.staging, 'c/b'), 'content')
-  t.deepEqual(await pda.readFile(archive.staging, 'c/c'), 'content')
+  await pda.copy(fs, '/b/b', '/c')
+  t.deepEqual((await pda.stat(fs, '/c')).isDirectory(), true)
+  t.deepEqual(await pda.readFile(fs, 'c/a'), 'content')
+  t.deepEqual(await pda.readFile(fs, 'c/b'), 'content')
+  t.deepEqual(await pda.readFile(fs, 'c/c'), 'content')
 })
 
 test('rename', async t => {
@@ -154,8 +154,8 @@ test('rename', async t => {
   t.deepEqual(await pda.readFile(archive, 'c/newb/c'), 'content')
 })
 
-test('rename w/staging', async t => {
-  var archive = await tutil.createArchive([
+test('rename w/fs', async t => {
+  var fs = await tutil.createFs([
     'a',
     'b/',
     'b/a',
@@ -165,26 +165,26 @@ test('rename w/staging', async t => {
     'b/b/c',
     'b/c',
     'c/'
-  ], {staging: true})
+  ])
 
-  await pda.rename(archive.staging, '/a', '/a-rename')
-  t.deepEqual(await pda.readFile(archive.staging, '/a-rename'), 'content')
-  t.deepEqual((await pda.stat(archive.staging, '/a-rename')).isFile(), true)
+  await pda.rename(fs, '/a', '/a-rename')
+  t.deepEqual(await pda.readFile(fs, '/a-rename'), 'content')
+  t.deepEqual((await pda.stat(fs, '/a-rename')).isFile(), true)
 
-  await pda.rename(archive.staging, '/b', '/b-rename')
-  t.deepEqual((await pda.stat(archive.staging, '/b-rename')).isDirectory(), true)
-  t.deepEqual(await pda.readFile(archive.staging, '/b-rename/a'), 'content')
-  t.deepEqual((await pda.stat(archive.staging, '/b-rename/b')).isDirectory(), true)
-  t.deepEqual(await pda.readFile(archive.staging, '/b-rename/b/a'), 'content')
-  t.deepEqual(await pda.readFile(archive.staging, '/b-rename/b/b'), 'content')
-  t.deepEqual(await pda.readFile(archive.staging, '/b-rename/b/c'), 'content')
-  t.deepEqual(await pda.readFile(archive.staging, '/b-rename/c'), 'content')
+  await pda.rename(fs, '/b', '/b-rename')
+  t.deepEqual((await pda.stat(fs, '/b-rename')).isDirectory(), true)
+  t.deepEqual(await pda.readFile(fs, '/b-rename/a'), 'content')
+  t.deepEqual((await pda.stat(fs, '/b-rename/b')).isDirectory(), true)
+  t.deepEqual(await pda.readFile(fs, '/b-rename/b/a'), 'content')
+  t.deepEqual(await pda.readFile(fs, '/b-rename/b/b'), 'content')
+  t.deepEqual(await pda.readFile(fs, '/b-rename/b/c'), 'content')
+  t.deepEqual(await pda.readFile(fs, '/b-rename/c'), 'content')
 
-  await pda.rename(archive.staging, '/b-rename/b', '/c/newb')
-  t.deepEqual((await pda.stat(archive.staging, '/c/newb')).isDirectory(), true)
-  t.deepEqual(await pda.readFile(archive.staging, 'c/newb/a'), 'content')
-  t.deepEqual(await pda.readFile(archive.staging, 'c/newb/b'), 'content')
-  t.deepEqual(await pda.readFile(archive.staging, 'c/newb/c'), 'content')
+  await pda.rename(fs, '/b-rename/b', '/c/newb')
+  t.deepEqual((await pda.stat(fs, '/c/newb')).isDirectory(), true)
+  t.deepEqual(await pda.readFile(fs, 'c/newb/a'), 'content')
+  t.deepEqual(await pda.readFile(fs, 'c/newb/b'), 'content')
+  t.deepEqual(await pda.readFile(fs, 'c/newb/c'), 'content')
 })
 
 test('EntryAlreadyExistsError', async t => {
@@ -212,28 +212,27 @@ test('EntryAlreadyExistsError', async t => {
   t.truthy(err6.entryAlreadyExists)
 })
 
-test('EntryAlreadyExistsError w/staging', async t => {
-  var archive = await tutil.createArchive([], {staging: true})
-  await new Promise(resolve => archive.ready(resolve))
+test('EntryAlreadyExistsError w/fs', async t => {
+  var fs = await tutil.createFs([])
 
-  await pda.mkdir(archive.staging, '/dir')
-  const err1 = await t.throws(pda.writeFile(archive.staging, '/dir', 'new content'))
+  await pda.mkdir(fs, '/dir')
+  const err1 = await t.throws(pda.writeFile(fs, '/dir', 'new content'))
   t.truthy(err1.entryAlreadyExists)
 
-  await pda.writeFile(archive.staging, '/file', 'new content')
-  const err2 = await t.throws(pda.mkdir(archive.staging, '/file'))
+  await pda.writeFile(fs, '/file', 'new content')
+  const err2 = await t.throws(pda.mkdir(fs, '/file'))
   t.truthy(err2.entryAlreadyExists)
 
-  const err3 = await t.throws(pda.copy(archive.staging, '/dir', '/file'))
+  const err3 = await t.throws(pda.copy(fs, '/dir', '/file'))
   t.truthy(err3.entryAlreadyExists)
 
-  const err4 = await t.throws(pda.copy(archive.staging, '/file', '/dir'))
+  const err4 = await t.throws(pda.copy(fs, '/file', '/dir'))
   t.truthy(err4.entryAlreadyExists)
 
-  const err5 = await t.throws(pda.rename(archive.staging, '/dir', '/file'))
+  const err5 = await t.throws(pda.rename(fs, '/dir', '/file'))
   t.truthy(err5.entryAlreadyExists)
 
-  const err6 = await t.throws(pda.rename(archive.staging, '/file', '/dir'))
+  const err6 = await t.throws(pda.rename(fs, '/file', '/dir'))
   t.truthy(err6.entryAlreadyExists)
 })
 
@@ -274,23 +273,22 @@ test('InvalidPathError', async t => {
   t.truthy(typeof noerr === 'undefined')
 })
 
-test('InvalidPathError w/staging', async t => {
-  var archive = await tutil.createArchive([], {staging: true})
-  await new Promise(resolve => archive.ready(resolve))
+test('InvalidPathError w/fs', async t => {
+  var fs = await tutil.createFs([])
 
-  const err1 = await t.throws(pda.writeFile(archive.staging, '/foo%20bar', 'new content'))
+  const err1 = await t.throws(pda.writeFile(fs, '/foo%20bar', 'new content'))
   t.truthy(err1.invalidPath)
 
-  const err2 = await t.throws(pda.mkdir(archive.staging, '/foo%20bar'))
+  const err2 = await t.throws(pda.mkdir(fs, '/foo%20bar'))
   t.truthy(err2.invalidPath)
 
-  const err3 = await t.throws(pda.copy(archive.staging, '/foo', '/foo%20bar'))
+  const err3 = await t.throws(pda.copy(fs, '/foo', '/foo%20bar'))
   t.truthy(err3.invalidPath)
 
-  const err4 = await t.throws(pda.rename(archive.staging, '/foo', '/foo%20bar'))
+  const err4 = await t.throws(pda.rename(fs, '/foo', '/foo%20bar'))
   t.truthy(err4.invalidPath)
 
-  const noerr = await pda.mkdir(archive.staging, '/foo bar')
+  const noerr = await pda.mkdir(fs, '/foo bar')
   t.truthy(typeof noerr === 'undefined')
 })
 
@@ -324,32 +322,32 @@ test('ParentFolderDoesntExistError', async t => {
   t.truthy(err8.parentFolderDoesntExist)
 })
 
-test('ParentFolderDoesntExistError w/staging', async t => {
-  var archive = await tutil.createArchive([
+test('ParentFolderDoesntExistError w/fs', async t => {
+  var fs = await tutil.createFs([
     'foo'
-  ], {staging: true})
+  ])
 
-  const err1 = await t.throws(pda.writeFile(archive.staging, '/bar/foo', 'new content'))
+  const err1 = await t.throws(pda.writeFile(fs, '/bar/foo', 'new content'))
   t.truthy(err1.parentFolderDoesntExist)
 
-  const err2 = await t.throws(pda.writeFile(archive.staging, '/foo/bar', 'new content'))
+  const err2 = await t.throws(pda.writeFile(fs, '/foo/bar', 'new content'))
   t.truthy(err2.parentFolderDoesntExist)
 
-  const err3 = await t.throws(pda.mkdir(archive.staging, '/bar/foo'))
+  const err3 = await t.throws(pda.mkdir(fs, '/bar/foo'))
   t.truthy(err3.parentFolderDoesntExist)
 
-  const err4 = await t.throws(pda.mkdir(archive.staging, '/foo/bar'))
+  const err4 = await t.throws(pda.mkdir(fs, '/foo/bar'))
   t.truthy(err4.parentFolderDoesntExist)
 
-  const err5 = await t.throws(pda.copy(archive.staging, '/foo', '/bar/foo'))
+  const err5 = await t.throws(pda.copy(fs, '/foo', '/bar/foo'))
   t.truthy(err5.parentFolderDoesntExist)
 
-  const err6 = await t.throws(pda.copy(archive.staging, '/foo', '/foo/bar'))
+  const err6 = await t.throws(pda.copy(fs, '/foo', '/foo/bar'))
   t.truthy(err6.parentFolderDoesntExist)
 
-  const err7 = await t.throws(pda.rename(archive.staging, '/foo', '/bar/foo'))
+  const err7 = await t.throws(pda.rename(fs, '/foo', '/bar/foo'))
   t.truthy(err7.parentFolderDoesntExist)
 
-  const err8 = await t.throws(pda.rename(archive.staging, '/foo', '/foo/bar'))
+  const err8 = await t.throws(pda.rename(fs, '/foo', '/foo/bar'))
   t.truthy(err8.parentFolderDoesntExist)
 })

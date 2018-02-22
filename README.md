@@ -6,17 +6,17 @@ These functions were factored out of [beaker browser](https://github.com/beakerb
 
 All async methods work with callbacks and promises. If no callback is provided, a promise will be returned.
 
-Any time a hyperdrive `archive` is expected, a [hyperdrive-staging-area](https://github.com/pfrazee/hyperdrive-staging-area) instance can be provided, unless otherwise stated.
+Any time a hyperdrive `archive` is expected, a [scoped-fs](https://github.com/pfrazee/scoped-fs) instance can be provided, unless otherwise stated.
 
 ```js
 var hyperdrive = require('hyperdrive')
-var hyperstaging = require('hyperdrive-staging-area')
+var ScopedFS = require('scoped-fs')
 
-var archive = hyperdrive('./my-first-hyperdrive-meta') // metadata will be stored in this folder
-var staging = hyperstaging(archive, './my-first-hyperdrive') // content will be stored in this folder
+var archive = hyperdrive('./my-hyperdrive')
+var scopedfs = new ScopedFS('./my-scoped-fs')
 
-await pda.readFile(archive, '/hello.txt') // read the committed hello.txt
-await pda.readFile(staging, '/hello.txt') // read the local hello.txt
+await pda.readFile(archive, '/hello.txt') // read the published hello.txt
+await pda.readFile(scopedfs, '/hello.txt') // read the local hello.txt
 ```
 
 ** NOTE: this library is written natively for node 7 and above. **
@@ -30,10 +30,6 @@ var pda = require('pauls-dat-api/es5');
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
-- [Staging](#staging)
-  - [diff(staging[, opts, cb])](#diffstaging-opts-cb)
-  - [commit(staging[, opts, cb])](#commitstaging-opts-cb)
-  - [revert(staging[, opts, cb])](#revertstaging-opts-cb)
 - [Lookup](#lookup)
   - [stat(archive, name[, cb])](#statarchive-name-cb)
 - [Read](#read)
@@ -51,7 +47,7 @@ var pda = require('pauls-dat-api/es5');
 - [Network](#network)
   - [download(archive, name[, cb])](#downloadarchive-name-cb)
 - [Activity Streams](#activity-streams)
-  - [createFileActivityStream(archive[, staging, path])](#createfileactivitystreamarchive-staging-path)
+  - [createFileActivityStream(archive[, path])](#createfileactivitystreamarchive-path)
   - [createNetworkActivityStream(archive)](#createnetworkactivitystreamarchive)
 - [Exporters](#exporters)
   - [exportFilesystemToArchive(opts[, cb])](#exportfilesystemtoarchiveopts-cb)
@@ -69,84 +65,6 @@ var pda = require('pauls-dat-api/es5');
 
 ```js
 const pda = require('pauls-dat-api')
-```
-
-## Staging
-
-### diff(staging[, opts, cb])
-
-List the differences between `staging` and its `archive`.
-
- - `archive` Hyperdrive archive (object).
- - `staging` HyperdriveStagingArea instance (object).
- - `opts.skipIgnore` Don't use staging's .datignore (bool).
- - Returns an array of changes.
-
-```js
-await pda.diff(staging)
-```
-
-Output looks like:
-
-```js
-[
-  {
-    change: 'add' | 'mod' | 'del'
-    type: 'dir' | 'file'
-    path: String (path of the file)
-  },
-  ...
-]
-```
-
-### commit(staging[, opts, cb])
-
-Apply the changes in `staging` to its `archive`.
-
- - `staging` HyperdriveStagingArea instance (object).
- - `opts.skipIgnore` Don't use staging's .datignore (bool).
- - Returns an array of the changes applied.
-
-```js
-await pda.commit(staging)
-```
-
-Output looks like:
-
-```js
-[
-  {
-    change: 'add' | 'mod' | 'del'
-    type: 'dir' | 'file'
-    path: String (path of the file)
-  },
-  ...
-]
-```
-
-### revert(staging[, opts, cb])
-
-Revert the changes in `staging` to reflect the state of its `archive`.
-
- - `staging` HyperdriveStagingArea instance (object).
- - `opts.skipIgnore` Don't use staging's .datignore (bool).
- - Returns an array of the changes that were reverted.
-
-```js
-await pda.revert(staging)
-```
-
-Output looks like:
-
-```js
-[
-  {
-    change: 'add' | 'mod' | 'del'
-    type: 'dir' | 'file'
-    path: String (path of the file)
-  },
-  ...
-]
 ```
 
 ## Lookup
@@ -314,7 +232,7 @@ await pda.rmdir(archive, '/stuff', {recursive: true})
 
 ### download(archive, name[, cb])
 
- - `archive` Hyperdrive archive (object). Can not be a staging object.
+ - `archive` Hyperdrive archive (object). Can not be a scoped-fs object.
  - `name` Entry path (string). Can point to a file or folder.
 
 Download an archive file or folder-tree.
@@ -330,10 +248,9 @@ await pda.download(archive, '/')
 
 ## Activity Streams
 
-### createFileActivityStream(archive[, staging, path])
+### createFileActivityStream(archive[, path])
 
  - `archive` Hyperdrive archive (object).
- - `staging` HyperdriveStagingArea instance (object).
  - `path` Entry path (string) or [anymatch](npm.im/anymatch) pattern (array of strings). If falsy, will watch all files.
  - Returns a Readable stream.
 
@@ -373,7 +290,7 @@ events.on('changed', args => {
 
 ### createNetworkActivityStream(archive)
 
- - `archive` Hyperdrive archive (object). Can not be a staging object.
+ - `archive` Hyperdrive archive (object). Can not be a scoped-fs object.
  - Returns a Readable stream.
 
 Watches the archive for network events, which it emits as an [emit-stream](https://github.com/substack/emit-stream). Supported events:

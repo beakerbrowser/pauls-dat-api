@@ -40,15 +40,15 @@ test(readTest, 'dir/', null, (t, err) => {
   t.truthy(err.notAFile)
 })
 
-readTest.title = (_, path) => `readFile(${path}) test (w/staging)`
-test('create archive w/staging', async t => {
-  target = (await tutil.createArchive([
+readTest.title = (_, path) => `readFile(${path}) test (w/fs)`
+test('create archive w/fs', async t => {
+  target = await tutil.createFs([
     'foo',
     'foo2/',
     'foo2/bar',
     { name: 'baz', content: Buffer.from([0x00, 0x01, 0x02, 0x03]) },
     'dir/'
-  ], {staging: true})).staging
+  ])
 })
 
 test(readTest, 'foo', 'content')
@@ -76,14 +76,14 @@ test('readFile encodings', async t => {
   await t.deepEqual(await pda.readFile(archive, 'buf', 'base64'), 'AAECAw==')
 })
 
-test('readFile encodings w/staging', async t => {
-  var archive = await tutil.createArchive([
+test('readFile encodings w/fs', async t => {
+  var fs = await tutil.createFs([
     { name: 'buf', content: Buffer.from([0x00, 0x01, 0x02, 0x03]) }
-  ], {staging: true})
+  ])
 
-  await t.deepEqual(await pda.readFile(archive.staging, 'buf', 'binary'), Buffer.from([0x00, 0x01, 0x02, 0x03]))
-  await t.deepEqual(await pda.readFile(archive.staging, 'buf', 'hex'), '00010203')
-  await t.deepEqual(await pda.readFile(archive.staging, 'buf', 'base64'), 'AAECAw==')
+  await t.deepEqual(await pda.readFile(fs, 'buf', 'binary'), Buffer.from([0x00, 0x01, 0x02, 0x03]))
+  await t.deepEqual(await pda.readFile(fs, 'buf', 'hex'), '00010203')
+  await t.deepEqual(await pda.readFile(fs, 'buf', 'base64'), 'AAECAw==')
 })
 
 test('readdir', async t => {
@@ -100,18 +100,18 @@ test('readdir', async t => {
   t.deepEqual(await pda.readdir(archive, '/foo/'), ['bar'])
 })
 
-test('readdir w/staging', async t => {
-  var archive = await tutil.createArchive([
+test('readdir w/fs', async t => {
+  var fs = await tutil.createFs([
     'foo/',
     'foo/bar',
     'baz'
-  ], {staging: true})
+  ])
 
-  t.deepEqual((await pda.readdir(archive.staging, '')).sort(), ['baz', 'foo'])
-  t.deepEqual((await pda.readdir(archive.staging, '/')).sort(), ['baz', 'foo'])
-  t.deepEqual(await pda.readdir(archive.staging, 'foo'), ['bar'])
-  t.deepEqual(await pda.readdir(archive.staging, '/foo'), ['bar'])
-  t.deepEqual(await pda.readdir(archive.staging, '/foo/'), ['bar'])
+  t.deepEqual((await pda.readdir(fs, '')).sort(), ['baz', 'foo'])
+  t.deepEqual((await pda.readdir(fs, '/')).sort(), ['baz', 'foo'])
+  t.deepEqual(await pda.readdir(fs, 'foo'), ['bar'])
+  t.deepEqual(await pda.readdir(fs, '/foo'), ['bar'])
+  t.deepEqual(await pda.readdir(fs, '/foo/'), ['bar'])
 })
 
 test('readdir recursive', async t => {
@@ -160,8 +160,8 @@ test('readdir recursive', async t => {
   ])
 })
 
-test('readdir recursive w/staging', async t => {
-  var archive = await tutil.createArchive([
+test('readdir recursive w/fs', async t => {
+  var fs = await tutil.createFs([
     'a',
     'b/',
     'b/a',
@@ -172,9 +172,9 @@ test('readdir recursive w/staging', async t => {
     'c/',
     'c/a',
     'c/b'
-  ], {staging: true})
+  ])
 
-  t.deepEqual((await pda.readdir(archive.staging, '/', {recursive: true})).map(tutil.tonix).sort(), [
+  t.deepEqual((await pda.readdir(fs, '/', {recursive: true})).map(tutil.tonix).sort(), [
     'a',
     'b',
     'b/a',
@@ -187,7 +187,7 @@ test('readdir recursive w/staging', async t => {
     'c/b'
   ])
 
-  t.deepEqual((await pda.readdir(archive.staging, '/b', {recursive: true})).map(tutil.tonix).map(stripPrecedingSlash).sort(), [
+  t.deepEqual((await pda.readdir(fs, '/b', {recursive: true})).map(tutil.tonix).map(stripPrecedingSlash).sort(), [
     'a',
     'b',
     'b/a',
@@ -195,12 +195,12 @@ test('readdir recursive w/staging', async t => {
     'c'
   ])
 
-  t.deepEqual((await pda.readdir(archive.staging, '/b/b', {recursive: true})).map(tutil.tonix).sort(), [
+  t.deepEqual((await pda.readdir(fs, '/b/b', {recursive: true})).map(tutil.tonix).sort(), [
     'a',
     'b'
   ])
 
-  t.deepEqual((await pda.readdir(archive.staging, '/c', {recursive: true})).map(tutil.tonix).sort(), [
+  t.deepEqual((await pda.readdir(fs, '/c', {recursive: true})).map(tutil.tonix).sort(), [
     'a',
     'b'
   ])
@@ -231,6 +231,35 @@ test('readSize', async t => {
   t.truthy(size2 > size1)
 
   var size3 = await pda.readSize(archive2, '/b')
+
+  t.truthy(size3 > 0)
+})
+
+test('readSize w/fs', async t => {
+  var fs1 = await tutil.createArchive([
+    'a'
+  ])
+  var fs2 = await tutil.createArchive([
+    'a',
+    'b/',
+    'b/a',
+    'b/b/',
+    'b/b/a',
+    'b/b/b',
+    'b/c/',
+    'c/',
+    'c/a',
+    'c/b'
+  ])
+
+  var size1 = await pda.readSize(fs1, '/')
+  var size2 = await pda.readSize(fs2, '/')
+
+  t.truthy(size1 > 0)
+  t.truthy(size2 > 0)
+  t.truthy(size2 > size1)
+
+  var size3 = await pda.readSize(fs2, '/b')
 
   t.truthy(size3 > 0)
 })

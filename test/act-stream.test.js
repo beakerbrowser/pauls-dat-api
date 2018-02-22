@@ -1,6 +1,5 @@
 const test = require('ava')
 const hyperdrive = require('hyperdrive')
-const hyperstaging = require('hyperdrive-staging-area')
 const tutil = require('./util')
 const pda = require('../index')
 
@@ -9,6 +8,133 @@ async function contentEvent (archive) {
     archive.on('content', resolve)
   })
 }
+
+test('createFileActivityStream fs', async t => {
+  // HACK
+  // 100ms timeouts are needed here because the FS watcher is not as consistent as dat's
+  // -prf
+
+  var fs
+  var changes
+  var stream
+  var done
+
+  // no pattern
+  // =
+
+  fs = await tutil.createFs()
+  stream = await pda.createFileActivityStream(fs)
+
+  done = new Promise(resolve => {
+    changes = ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt']
+    stream.on('data', ([event, args]) => {
+      t.deepEqual(event, 'changed')
+      t.deepEqual(args.path, changes.shift())
+      if (changes.length === 0) resolve()
+    })
+  })
+
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/a.txt', 'one', 'utf8')
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/b.txt', 'one', 'utf8')
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/a.txt', 'one', 'utf8')
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/a.txt', 'two', 'utf8')
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/b.txt', 'two', 'utf8')
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/c.txt', 'one', 'utf8')
+  await done
+
+  // simple pattern
+  // =
+
+  fs = await tutil.createFs()
+  stream = await pda.createFileActivityStream(fs, '/a.txt')
+
+  done = new Promise(resolve => {
+    changes = ['/a.txt', '/a.txt', '/a.txt']
+    stream.on('data', ([event, args]) => {
+      t.deepEqual(event, 'changed')
+      t.deepEqual(args.path, changes.shift())
+      if (changes.length === 0) resolve()
+    })
+  })
+
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/a.txt', 'one', 'utf8')
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/b.txt', 'one', 'utf8')
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/a.txt', 'one', 'utf8')
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/a.txt', 'two', 'utf8')
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/b.txt', 'two', 'utf8')
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/c.txt', 'one', 'utf8')
+  await done
+
+  // complex pattern
+  // =
+
+  fs = await tutil.createFs()
+  stream = await pda.createFileActivityStream(fs, ['/a.txt', '/c.txt'])
+
+  done = new Promise(resolve => {
+    changes = ['/a.txt', '/a.txt', '/a.txt', '/c.txt']
+    stream.on('data', ([event, args]) => {
+      t.deepEqual(event, 'changed')
+      t.deepEqual(args.path, changes.shift())
+      if (changes.length === 0) resolve()
+    })
+  })
+
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/a.txt', 'one', 'utf8')
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/b.txt', 'one', 'utf8')
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/a.txt', 'one', 'utf8')
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/a.txt', 'two', 'utf8')
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/b.txt', 'two', 'utf8')
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/c.txt', 'one', 'utf8')
+  await done
+
+  // glob
+  // =
+
+  fs = await tutil.createFs()
+  stream = await pda.createFileActivityStream(fs, '/*.txt')
+
+  done = new Promise(resolve => {
+    changes = ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt']
+    stream.on('data', ([event, args]) => {
+      t.deepEqual(event, 'changed')
+      t.deepEqual(args.path, changes.shift())
+      if (changes.length === 0) resolve()
+    })
+  })
+
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/a.txt', 'one', 'utf8')
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/b.txt', 'one', 'utf8')
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/a.txt', 'one', 'utf8')
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/a.txt', 'two', 'utf8')
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/b.txt', 'two', 'utf8')
+  await new Promise(r => setTimeout(r, 100))
+  await pda.writeFile(fs, '/c.txt', 'one', 'utf8')
+  await done
+})
 
 test('createFileActivityStream local', async t => {
   var archive
@@ -113,101 +239,6 @@ test('createFileActivityStream local', async t => {
   await done
 })
 
-test('createFileActivityStream local w/staging', async t => {
-  var archive
-  var changes
-  var stream
-  var done
-
-  // no pattern
-  // =
-
-  archive = await tutil.createArchive([], {staging: true})
-  await new Promise(resolve => archive.ready(resolve))
-  stream = pda.createFileActivityStream(archive, archive.staging)
-
-  done = new Promise(resolve => {
-    var nChanges = 3
-    changes = ['/a.txt', '/b.txt', '/c.txt']
-    stream.on('data', ([event, args]) => {
-      t.deepEqual(event, 'changed')
-      t.deepEqual(changes.indexOf(args.path) !== -1, true)
-      if (--nChanges === 0) resolve()
-    })
-  })
-
-  await pda.writeFile(archive.staging, '/a.txt', 'one', 'utf8')
-  await pda.writeFile(archive.staging, '/b.txt', 'one', 'utf8')
-  await pda.writeFile(archive.staging, '/c.txt', 'one', 'utf8')
-  await done
-
-  // simple pattern
-  // =
-
-  archive = await tutil.createArchive([], {staging: true})
-  await new Promise(resolve => archive.ready(resolve))
-  stream = pda.createFileActivityStream(archive, archive.staging, '/a.txt')
-
-  done = new Promise(resolve => {
-    var nChanges = 1
-    changes = ['/a.txt']
-    stream.on('data', ([event, args]) => {
-      t.deepEqual(event, 'changed')
-      t.deepEqual(changes.indexOf(args.path) !== -1, true)
-      if (--nChanges === 0) resolve()
-    })
-  })
-
-  await pda.writeFile(archive.staging, '/a.txt', 'one', 'utf8')
-  await pda.writeFile(archive.staging, '/b.txt', 'one', 'utf8')
-  await pda.writeFile(archive.staging, '/c.txt', 'one', 'utf8')
-  await done
-
-  // complex pattern
-  // =
-
-  archive = await tutil.createArchive([], {staging: true})
-  await new Promise(resolve => archive.ready(resolve))
-  stream = pda.createFileActivityStream(archive, archive.staging, ['/a.txt', '/c.txt'])
-
-  done = new Promise(resolve => {
-    var nChanges = 2
-    changes = ['/a.txt', '/c.txt']
-    stream.on('data', ([event, args]) => {
-      t.deepEqual(event, 'changed')
-      t.deepEqual(changes.indexOf(args.path) !== -1, true)
-      if (--nChanges === 0) resolve()
-    })
-  })
-
-  await pda.writeFile(archive.staging, '/a.txt', 'one', 'utf8')
-  await pda.writeFile(archive.staging, '/b.txt', 'one', 'utf8')
-  await pda.writeFile(archive.staging, '/c.txt', 'one', 'utf8')
-  await done
-
-  // glob
-  // =
-
-  archive = await tutil.createArchive([], {staging: true})
-  await new Promise(resolve => archive.ready(resolve))
-  stream = pda.createFileActivityStream(archive, archive.staging, '/*.txt')
-
-  done = new Promise(resolve => {
-    var nChanges = 3
-    changes = ['/a.txt', '/b.txt', '/c.txt']
-    stream.on('data', ([event, args]) => {
-      t.deepEqual(event, 'changed')
-      t.deepEqual(changes.indexOf(args.path) !== -1, true)
-      if (--nChanges === 0) resolve()
-    })
-  })
-
-  await pda.writeFile(archive.staging, '/a.txt', 'one', 'utf8')
-  await pda.writeFile(archive.staging, '/b.txt', 'two', 'utf8')
-  await pda.writeFile(archive.staging, '/c.txt', 'one', 'utf8')
-  await done
-})
-
 test('createFileActivityStream remote sparse', async t => {
   // no pattern
   // =
@@ -235,56 +266,6 @@ test('createFileActivityStream remote sparse', async t => {
         t.deepEqual(args.path, changes.shift())
       }
       if (changes.length === 0 && invalidates.length === 0) resolve()
-    })
-  })
-
-  await pda.writeFile(src, 'a.txt', 'one', 'utf8')
-  await pda.writeFile(src, 'b.txt', 'one', 'utf8')
-  await pda.writeFile(src, 'a.txt', 'one', 'utf8')
-  await pda.writeFile(src, 'a.txt', 'two', 'utf8')
-  await pda.writeFile(src, 'b.txt', 'two', 'utf8')
-  await pda.writeFile(src, 'c.txt', 'one', 'utf8')
-
-  // wait 100ms to let metadata sync
-  await new Promise(resolve => setTimeout(resolve, 100))
-
-  await pda.download(dst, 'a.txt')
-  await pda.download(dst, 'c.txt')
-  await pda.download(dst, 'b.txt')
-
-  await done
-})
-
-test('createFileActivityStream remote sparse w/staging', async t => {
-  // no pattern
-  // =
-
-  var done
-  const src = await tutil.createArchive()
-  await new Promise(resolve => src.ready(resolve))
-  const dst = hyperdrive(tutil.tmpdir(), src.key, {sparse: true})
-  const srcRS = src.replicate({live: true})
-  const dstRS = dst.replicate({live: true})
-  srcRS.pipe(dstRS).pipe(srcRS)
-  await contentEvent(dst)
-
-  dst.staging = hyperstaging(dst, tutil.tmpdir())
-  dst.staging.startAutoSync()
-
-  var stream = pda.createFileActivityStream(dst, dst.staging)
-
-  done = new Promise(resolve => {
-    var invalidates = ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt']
-    var changes = ['/a.txt', '/b.txt', '/c.txt']
-    var nChanges = 3
-    stream.on('data', ([event, args]) => {
-      if (event === 'invalidated') {
-        t.deepEqual(args.path, invalidates.shift())
-      } else if (event === 'changed') {
-        t.deepEqual(changes.indexOf(args.path) !== -1, true)
-        nChanges--
-      }
-      if (nChanges <= 0 && invalidates.length === 0) resolve()
     })
   })
 
@@ -344,56 +325,6 @@ test('createFileActivityStream remote non-sparse', async t => {
   await pda.writeFile(src, 'b.txt', 'two', 'utf8')
   await pda.writeFile(src, 'c.txt', 'one', 'utf8')
   await pda.unlink(src, 'a.txt')
-  await done
-})
-
-test('createFileActivityStream remote non-sparse w/staging', async t => {
-  // no pattern
-  // =
-
-  var done
-  const src = await tutil.createArchive()
-  await new Promise(resolve => src.ready(resolve))
-  const dst = hyperdrive(tutil.tmpdir(), src.key, {sparse: false})
-  const srcRS = src.replicate({live: true})
-  const dstRS = dst.replicate({live: true})
-  srcRS.pipe(dstRS).pipe(srcRS)
-  await contentEvent(dst)
-
-  dst.staging = hyperstaging(dst, tutil.tmpdir())
-  dst.staging.startAutoSync()
-
-  var stream = pda.createFileActivityStream(dst, dst.staging)
-
-  done = new Promise(resolve => {
-    var invalidates = ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt']
-    var changes = ['/a.txt', '/b.txt', '/c.txt']
-    var nChanges = 3
-    stream.on('data', ([event, args]) => {
-      if (event === 'invalidated') {
-        t.deepEqual(args.path, invalidates.shift())
-      } else if (event === 'changed') {
-        t.deepEqual(changes.indexOf(args.path) !== -1, true)
-        nChanges--
-      }
-      if (nChanges <= 0 && invalidates.length === 0) resolve()
-    })
-  })
-
-  await pda.writeFile(src, 'a.txt', 'one', 'utf8')
-  await pda.writeFile(src, 'b.txt', 'one', 'utf8')
-  await pda.writeFile(src, 'a.txt', 'one', 'utf8')
-  await pda.writeFile(src, 'a.txt', 'two', 'utf8')
-  await pda.writeFile(src, 'b.txt', 'two', 'utf8')
-  await pda.writeFile(src, 'c.txt', 'one', 'utf8')
-
-  // wait 100ms to let metadata sync
-  await new Promise(resolve => setTimeout(resolve, 100))
-
-  await pda.download(dst, 'a.txt')
-  await pda.download(dst, 'c.txt')
-  await pda.download(dst, 'b.txt')
-
   await done
 })
 
