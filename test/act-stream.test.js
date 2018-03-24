@@ -9,7 +9,7 @@ async function contentEvent (archive) {
   })
 }
 
-test('createFileActivityStream fs', async t => {
+test('watch fs', async t => {
   // HACK
   // 100ms timeouts are needed here because the FS watcher is not as consistent as dat's
   // -prf
@@ -23,7 +23,7 @@ test('createFileActivityStream fs', async t => {
   // =
 
   fs = await tutil.createFs()
-  stream = await pda.createFileActivityStream(fs)
+  stream = await pda.watch(fs)
 
   done = new Promise(resolve => {
     changes = ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt']
@@ -52,7 +52,7 @@ test('createFileActivityStream fs', async t => {
   // =
 
   fs = await tutil.createFs()
-  stream = await pda.createFileActivityStream(fs, '/a.txt')
+  stream = await pda.watch(fs, '/a.txt')
 
   done = new Promise(resolve => {
     changes = ['/a.txt', '/a.txt', '/a.txt']
@@ -81,7 +81,7 @@ test('createFileActivityStream fs', async t => {
   // =
 
   fs = await tutil.createFs()
-  stream = await pda.createFileActivityStream(fs, ['/a.txt', '/c.txt'])
+  stream = await pda.watch(fs, ['/a.txt', '/c.txt'])
 
   done = new Promise(resolve => {
     changes = ['/a.txt', '/a.txt', '/a.txt', '/c.txt']
@@ -110,7 +110,7 @@ test('createFileActivityStream fs', async t => {
   // =
 
   fs = await tutil.createFs()
-  stream = await pda.createFileActivityStream(fs, '/*.txt')
+  stream = await pda.watch(fs, '/*.txt')
 
   done = new Promise(resolve => {
     changes = ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt']
@@ -136,7 +136,7 @@ test('createFileActivityStream fs', async t => {
   await done
 })
 
-test('createFileActivityStream local', async t => {
+test('watch local', async t => {
   var archive
   var changes
   var stream
@@ -147,7 +147,7 @@ test('createFileActivityStream local', async t => {
 
   archive = await tutil.createArchive()
   await new Promise(resolve => archive.ready(resolve))
-  stream = pda.createFileActivityStream(archive)
+  stream = pda.watch(archive)
 
   done = new Promise(resolve => {
     changes = ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt']
@@ -171,7 +171,7 @@ test('createFileActivityStream local', async t => {
 
   archive = await tutil.createArchive()
   await new Promise(resolve => archive.ready(resolve))
-  stream = pda.createFileActivityStream(archive, '/a.txt')
+  stream = pda.watch(archive, '/a.txt')
 
   done = new Promise(resolve => {
     changes = ['/a.txt', '/a.txt', '/a.txt']
@@ -195,7 +195,7 @@ test('createFileActivityStream local', async t => {
 
   archive = await tutil.createArchive()
   await new Promise(resolve => archive.ready(resolve))
-  stream = pda.createFileActivityStream(archive, ['/a.txt', '/c.txt'])
+  stream = pda.watch(archive, ['/a.txt', '/c.txt'])
 
   done = new Promise(resolve => {
     changes = ['/a.txt', '/a.txt', '/a.txt', '/c.txt']
@@ -219,7 +219,7 @@ test('createFileActivityStream local', async t => {
 
   archive = await tutil.createArchive()
   await new Promise(resolve => archive.ready(resolve))
-  stream = pda.createFileActivityStream(archive, '/*.txt')
+  stream = pda.watch(archive, '/*.txt')
 
   done = new Promise(resolve => {
     changes = ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt']
@@ -239,7 +239,7 @@ test('createFileActivityStream local', async t => {
   await done
 })
 
-test('createFileActivityStream remote sparse', async t => {
+test('watch remote sparse', async t => {
   // no pattern
   // =
 
@@ -252,7 +252,7 @@ test('createFileActivityStream remote sparse', async t => {
   srcRS.pipe(dstRS).pipe(srcRS)
   await contentEvent(dst)
 
-  var stream = pda.createFileActivityStream(dst)
+  var stream = pda.watch(dst)
 
   // invalidation phase
 
@@ -286,7 +286,7 @@ test('createFileActivityStream remote sparse', async t => {
   await done
 })
 
-test('createFileActivityStream remote non-sparse', async t => {
+test('watch remote non-sparse', async t => {
   // no pattern
   // =
 
@@ -299,7 +299,7 @@ test('createFileActivityStream remote non-sparse', async t => {
   srcRS.pipe(dstRS).pipe(srcRS)
   await contentEvent(dst)
 
-  var stream = pda.createFileActivityStream(dst)
+  var stream = pda.watch(dst)
 
   // invalidation phase
 

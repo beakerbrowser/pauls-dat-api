@@ -47,7 +47,7 @@ var pda = require('pauls-dat-api/es5');
 - [Network](#network)
   - [download(archive, name[, cb])](#downloadarchive-name-cb)
 - [Activity Streams](#activity-streams)
-  - [createFileActivityStream(archive[, path])](#createfileactivitystreamarchive-path)
+  - [watch(archive[, path])](#watcharchive-path)
   - [createNetworkActivityStream(archive)](#createnetworkactivitystreamarchive)
 - [Exporters](#exporters)
   - [exportFilesystemToArchive(opts[, cb])](#exportfilesystemtoarchiveopts-cb)
@@ -248,7 +248,7 @@ await pda.download(archive, '/')
 
 ## Activity Streams
 
-### createFileActivityStream(archive[, path])
+### watch(archive[, path])
 
  - `archive` Hyperdrive archive (object).
  - `path` Entry path (string) or [anymatch](npm.im/anymatch) pattern (array of strings). If falsy, will watch all files.
@@ -262,9 +262,9 @@ Watches the given path or path-pattern for file events, which it emits as an [em
 An archive will emit "invalidated" first, when it receives the new metadata for the file. It will then emit "changed" when the content arrives. (A local archive will not emit "invalidated.")
 
 ```js
-var es = pda.createFileActivityStream(archive)
-var es = pda.createFileActivityStream(archive, 'foo.txt')
-var es = pda.createFileActivityStream(archive, ['**/*.txt', '**/*.md'])
+var es = pda.watch(archive)
+var es = pda.watch(archive, 'foo.txt')
+var es = pda.watch(archive, ['**/*.txt', '**/*.md'])
 
 es.on('data', ([event, args]) => {
   if (event === 'invalidated') {
@@ -278,7 +278,7 @@ es.on('data', ([event, args]) => {
 // alternatively, via emit-stream:
 
 var emitStream = require('emit-stream')
-var events = emitStream(es)
+var events = emitStream(pda.watch(archive))
 events.on('invalidated', args => {
   console.log(args.path, 'has been invalidated')
   pda.download(archive, args.path)
