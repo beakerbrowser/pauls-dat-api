@@ -468,7 +468,7 @@ Helper to generate a manifest object. Opts in detail:
   description: String
   type: Array<String>
   author: String | Object{name: String, url: String}
-  repository: String
+  links: Object
   web_root: String
   fallback_page: String
 }
