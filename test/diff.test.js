@@ -176,6 +176,60 @@ test('diff against populated', async t => {
   ])
 })
 
+test('diff always ignores dat.json', async t => {
+  var changes
+
+  const srcArchive = await tutil.createArchive([
+    'dat.json',
+    'foo.txt',
+    { name: 'bar.data', content: Buffer.from([0x00, 0x01]) },
+    'subdir/',
+    'subdir/foo.txt',
+    { name: 'subdir/bar.data', content: Buffer.from([0x00, 0x01]) }
+  ])
+  const dstArchive = await tutil.createArchive()
+
+  await new Promise(resolve => srcArchive.ready(resolve))
+  await new Promise(resolve => dstArchive.ready(resolve))
+
+  // no paths filter
+  // =
+
+  changes = await pda.diff(srcArchive, '/', dstArchive, '/')
+  t.deepEqual(changes, [
+    // NOTE: no dat.json
+    { change: 'add', type: 'file', path: '/foo.txt' },
+    { change: 'add', type: 'file', path: '/bar.data' },
+    { change: 'add', type: 'dir', path: '/subdir' },
+    { change: 'add', type: 'file', path: '/subdir/bar.data' },
+    { change: 'add', type: 'file', path: '/subdir/foo.txt' }
+  ])
+
+  // with paths filter
+  // =
+
+  changes = await pda.diff(srcArchive, '/', dstArchive, '/', {paths: ['/foo.txt', '/subdir']})
+  t.deepEqual(changes, [
+    // NOTE: no dat.json
+    { change: 'add', type: 'file', path: '/foo.txt' },
+    { change: 'add', type: 'dir', path: '/subdir' },
+    { change: 'add', type: 'file', path: '/subdir/bar.data' },
+    { change: 'add', type: 'file', path: '/subdir/foo.txt' }
+  ])
+
+  // with paths filter that tries to include dat.json
+  // =
+
+  changes = await pda.diff(srcArchive, '/', dstArchive, '/', {paths: ['/dat.json', '/foo.txt', '/subdir']})
+  t.deepEqual(changes, [
+    // NOTE: no dat.json
+    { change: 'add', type: 'file', path: '/foo.txt' },
+    { change: 'add', type: 'dir', path: '/subdir' },
+    { change: 'add', type: 'file', path: '/subdir/bar.data' },
+    { change: 'add', type: 'file', path: '/subdir/foo.txt' }
+  ])
+})
+
 test('merge into empty', async t => {
   var changes
 
