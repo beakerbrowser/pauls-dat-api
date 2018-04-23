@@ -8,5 +8,6 @@ module.exports = Object.assign({},
   require('./lib/network'),
   require('./lib/act-stream'),
   require('./lib/manifest'),
-  require('./lib/export')
+  require('./lib/export'),
+  require('./lib/diff')
 )
