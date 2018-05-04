@@ -203,7 +203,7 @@ This is equivalent to moving a file/folder.
 
 ```js
 // move file:
-await pda.copy(archive, '/foo.txt', '/foo.md')
+await pda.rename(archive, '/foo.txt', '/foo.md')
 // move folder:
 await pda.rename(archive, '/stuff', '/things')
 ```
