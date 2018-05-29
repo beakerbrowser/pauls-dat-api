@@ -76,6 +76,25 @@ test('read/write/update manifest', async t => {
       url: 'dat://ffffffffffffffffffffffffffffffff'
     }
   })
+
+  // should ignore bad well-known values
+  // but leave others alone
+  await pda.updateManifest(archive, {
+    author: true,
+    foobar: true
+  })
+
+  t.deepEqual(await pda.readManifest(archive), {
+    title: 'My Dat!!',
+    description: 'This dat has a manifest!',
+    type: ['foo'],
+    links: {repository: [{href: 'https://github.com/pfrazee/pauls-dat-api.git'}]},
+    url: `dat://${tutil.FAKE_DAT_KEY}`,
+    author: {
+      url: 'dat://ffffffffffffffffffffffffffffffff'
+    },
+    foobar: true
+  })
 })
 
 test('read/write/update manifest w/fs', async t => {
