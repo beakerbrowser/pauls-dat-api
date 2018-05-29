@@ -21,7 +21,7 @@ test('diff against empty', async t => {
   // =
 
   changes = await pda.diff(srcArchive, '/', dstArchive, '/')
-  t.deepEqual(changes, [
+  t.deepEqual(changes.map(massageDiffObj), [
     { change: 'add', type: 'file', path: '/foo.txt' },
     { change: 'add', type: 'file', path: '/bar.data' },
     { change: 'add', type: 'dir', path: '/subdir' },
@@ -33,7 +33,7 @@ test('diff against empty', async t => {
   // =
 
   changes = await pda.diff(srcArchive, '/', dstArchive, '/', {shallow: true})
-  t.deepEqual(changes, [
+  t.deepEqual(changes.map(massageDiffObj), [
     { change: 'add', type: 'file', path: '/foo.txt' },
     { change: 'add', type: 'file', path: '/bar.data' },
     { change: 'add', type: 'dir', path: '/subdir' }
@@ -43,7 +43,7 @@ test('diff against empty', async t => {
   // =
 
   changes = await pda.diff(srcArchive, '/', dstArchive, '/', {paths: ['/foo.txt', '/subdir']})
-  t.deepEqual(changes, [
+  t.deepEqual(changes.map(massageDiffObj), [
     { change: 'add', type: 'file', path: '/foo.txt' },
     { change: 'add', type: 'dir', path: '/subdir' },
     { change: 'add', type: 'file', path: '/subdir/bar.data' },
@@ -60,7 +60,7 @@ test('diff against empty', async t => {
   // =
 
   changes = await pda.diff(srcArchive, '/subdir', dstArchive, '/')
-  t.deepEqual(changes, [
+  t.deepEqual(changes.map(massageDiffObj), [
     { change: 'add', type: 'file', path: '/bar.data' },
     { change: 'add', type: 'file', path: '/foo.txt' }
   ])
@@ -99,7 +99,7 @@ test('diff against populated', async t => {
   // =
 
   changes = await pda.diff(srcArchive, '/', dstArchive, '/')
-  t.deepEqual(changes, [
+  t.deepEqual(changes.map(massageDiffObj), [
     { change: 'del', type: 'file', path: '/otherfile.txt' },
     { change: 'mod', type: 'file', path: '/foo.txt' },
     { change: 'del', type: 'dir', path: '/bar.data' },
@@ -115,7 +115,7 @@ test('diff against populated', async t => {
   // =
 
   changes = await pda.diff(srcArchive, '/', dstArchive, '/', {shallow: true})
-  t.deepEqual(changes, [
+  t.deepEqual(changes.map(massageDiffObj), [
     { change: 'del', type: 'file', path: '/otherfile.txt' },
     { change: 'mod', type: 'file', path: '/foo.txt' },
     { change: 'del', type: 'dir', path: '/bar.data' },
@@ -130,7 +130,7 @@ test('diff against populated', async t => {
   // =
 
   changes = await pda.diff(srcArchive, '/', dstArchive, '/', {paths: ['/foo.txt', '/subdir']})
-  t.deepEqual(changes, [
+  t.deepEqual(changes.map(massageDiffObj), [
     { change: 'mod', type: 'file', path: '/foo.txt' },
     { change: 'del', type: 'dir', path: '/subdir/foo.txt' },
     { change: 'del', type: 'file', path: '/subdir/bar.data/hi' },
@@ -143,13 +143,13 @@ test('diff against populated', async t => {
   // =
 
   changes = await pda.diff(srcArchive, '/', dstArchive, '/', {ops: ['mod']})
-  t.deepEqual(changes, [ { change: 'mod', type: 'file', path: '/foo.txt' } ])
+  t.deepEqual(changes.map(massageDiffObj), [ { change: 'mod', type: 'file', path: '/foo.txt' } ])
 
   // diff subdir against populated root, shallow=false, filter=none, ops=all
   // =
 
   changes = await pda.diff(srcArchive, '/subdir', dstArchive, '/')
-  t.deepEqual(changes, [
+  t.deepEqual(changes.map(massageDiffObj), [
     { change: 'del', type: 'file', path: '/otherfile.txt' },
     { change: 'mod', type: 'file', path: '/foo.txt' },
     { change: 'del', type: 'dir', path: '/bar.data' },
@@ -164,7 +164,7 @@ test('diff against populated', async t => {
   // =
 
   changes = await pda.diff(srcArchive, '/', dstArchive, '/subdir')
-  t.deepEqual(changes, [
+  t.deepEqual(changes.map(massageDiffObj), [
     { change: 'add', type: 'dir', path: '/subdir' },
     { change: 'add', type: 'file', path: '/subdir/bar.data' },
     { change: 'add', type: 'file', path: '/subdir/foo.txt' },
@@ -196,7 +196,7 @@ test('diff always ignores dat.json', async t => {
   // =
 
   changes = await pda.diff(srcArchive, '/', dstArchive, '/')
-  t.deepEqual(changes, [
+  t.deepEqual(changes.map(massageDiffObj), [
     // NOTE: no dat.json
     { change: 'add', type: 'file', path: '/foo.txt' },
     { change: 'add', type: 'file', path: '/bar.data' },
@@ -209,7 +209,7 @@ test('diff always ignores dat.json', async t => {
   // =
 
   changes = await pda.diff(srcArchive, '/', dstArchive, '/', {paths: ['/foo.txt', '/subdir']})
-  t.deepEqual(changes, [
+  t.deepEqual(changes.map(massageDiffObj), [
     // NOTE: no dat.json
     { change: 'add', type: 'file', path: '/foo.txt' },
     { change: 'add', type: 'dir', path: '/subdir' },
@@ -221,7 +221,7 @@ test('diff always ignores dat.json', async t => {
   // =
 
   changes = await pda.diff(srcArchive, '/', dstArchive, '/', {paths: ['/dat.json', '/foo.txt', '/subdir']})
-  t.deepEqual(changes, [
+  t.deepEqual(changes.map(massageDiffObj), [
     // NOTE: no dat.json
     { change: 'add', type: 'file', path: '/foo.txt' },
     { change: 'add', type: 'dir', path: '/subdir' },
@@ -246,7 +246,7 @@ test('merge into empty', async t => {
   await new Promise(resolve => dstArchive.ready(resolve))
 
   changes = await pda.merge(srcArchive, '/', dstArchive, '/')
-  t.deepEqual(changes, [
+  t.deepEqual(changes.map(massageDiffObj), [
     { change: 'add', type: 'file', path: '/foo.txt' },
     { change: 'add', type: 'file', path: '/bar.data' },
     { change: 'add', type: 'dir', path: '/subdir' },
@@ -283,7 +283,7 @@ test('merge into populated', async t => {
   await new Promise(resolve => dstArchive.ready(resolve))
 
   changes = await pda.merge(srcArchive, '/', dstArchive, '/')
-  t.deepEqual(changes, [
+  t.deepEqual(changes.map(massageDiffObj), [
     { change: 'del', type: 'file', path: '/otherfile.txt' },
     { change: 'mod', type: 'file', path: '/foo.txt' },
     { change: 'del', type: 'dir', path: '/bar.data' },
@@ -325,7 +325,7 @@ test('merge into populated (add only)', async t => {
   await new Promise(resolve => dstArchive.ready(resolve))
 
   changes = await pda.merge(srcArchive, '/', dstArchive, '/', {ops: ['add']})
-  t.deepEqual(changes, [
+  t.deepEqual(changes.map(massageDiffObj), [
     { change: 'add', type: 'file', path: '/bar.data' },
     { change: 'add', type: 'file', path: '/subdir/foo.txt' },
     { change: 'add', type: 'file', path: '/subdir/bar.data' }
@@ -335,3 +335,8 @@ test('merge into populated (add only)', async t => {
   t.deepEqual((await pda.readdir(dstArchive, '/subdir')).sort(), ['bar.data', 'foo.txt'])
   t.deepEqual((await pda.stat(dstArchive, '/bar.data')).isFile(), true) // add-only still overwrites folders with files
 })
+
+function massageDiffObj (d) {
+  d.path = tutil.tonix(d.path)
+  return d
+}

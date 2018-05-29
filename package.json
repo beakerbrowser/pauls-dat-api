@@ -40,6 +40,6 @@
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "hyperdrive": "^9.12.3",
-    "scoped-fs": "^1.1.2"
+    "scoped-fs": "^1.1.3"
   }
 }
