@@ -159,6 +159,7 @@ test('watch fs', async t => {
 test('watch local', async t => {
   var archive
   var changes
+  var invalidates
   var stream
   var done
 
@@ -170,11 +171,15 @@ test('watch local', async t => {
   stream = pda.watch(archive)
 
   done = new Promise(resolve => {
+    invalidates = ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt']
     changes = ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt']
     stream.on('data', ([event, args]) => {
-      t.deepEqual(event, 'changed')
-      t.deepEqual(args.path, changes.shift())
-      if (changes.length === 0) resolve()
+      if (event === 'invalidated') {
+        t.deepEqual(args.path, invalidates.shift())
+      } else if (event === 'changed') {
+        t.deepEqual(args.path, changes.shift())
+      }
+      if (invalidates.length === 0 && changes.length === 0) resolve()
     })
   })
 
@@ -195,10 +200,14 @@ test('watch local', async t => {
 
   done = new Promise(resolve => {
     changes = ['/a.txt', '/a.txt', '/a.txt']
+    invalidates = ['/a.txt', '/a.txt', '/a.txt']
     stream.on('data', ([event, args]) => {
-      t.deepEqual(event, 'changed')
-      t.deepEqual(args.path, changes.shift())
-      if (changes.length === 0) resolve()
+      if (event === 'invalidated') {
+        t.deepEqual(args.path, invalidates.shift())
+      } else if (event === 'changed') {
+        t.deepEqual(args.path, changes.shift())
+      }
+      if (invalidates.length === 0 && changes.length === 0) resolve()
     })
   })
 
@@ -219,10 +228,14 @@ test('watch local', async t => {
 
   done = new Promise(resolve => {
     changes = ['/a.txt', '/a.txt', '/a.txt', '/c.txt']
+    invalidates = ['/a.txt', '/a.txt', '/a.txt', '/c.txt']
     stream.on('data', ([event, args]) => {
-      t.deepEqual(event, 'changed')
-      t.deepEqual(args.path, changes.shift())
-      if (changes.length === 0) resolve()
+      if (event === 'invalidated') {
+        t.deepEqual(args.path, invalidates.shift())
+      } else if (event === 'changed') {
+        t.deepEqual(args.path, changes.shift())
+      }
+      if (invalidates.length === 0 && changes.length === 0) resolve()
     })
   })
 
@@ -243,10 +256,14 @@ test('watch local', async t => {
 
   done = new Promise(resolve => {
     changes = ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt']
+    invalidates = ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt']
     stream.on('data', ([event, args]) => {
-      t.deepEqual(event, 'changed')
-      t.deepEqual(args.path, changes.shift())
-      if (changes.length === 0) resolve()
+      if (event === 'invalidated') {
+        t.deepEqual(args.path, invalidates.shift())
+      } else if (event === 'changed') {
+        t.deepEqual(args.path, changes.shift())
+      }
+      if (invalidates.length === 0 && changes.length === 0) resolve()
     })
   })
 

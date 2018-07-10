@@ -259,10 +259,10 @@ await pda.download(archive, '/')
 
 Watches the given path or path-pattern for file events, which it emits as an [emit-stream](https://github.com/substack/emit-stream). Supported events:
 
- - `['changed',{path}]` - The contents of the file has changed, either by a local write or a remote write. The new content will be ready when this event is emitted. `path` is the path-string of the file.
- - `['invalidated',{path}]` - The contents of the file has changed remotely, but hasn't been downloaded yet. `path` is the path-string of the file.
+ - `['invalidated',{path}]` - The contents of the file has changed, but may not have been downloaded yet. `path` is the path-string of the file.
+ - `['changed',{path}]` - The contents of the file has changed, and the new version is ready to read. `path` is the path-string of the file.
 
-An archive will emit "invalidated" first, when it receives the new metadata for the file. It will then emit "changed" when the content arrives. (A local archive will not emit "invalidated.")
+An archive will emit "invalidated" first, when it receives the new metadata for the file. It will then emit "changed" when the content arrives. (A local archive will emit "invalidated" immediately before "changed.")
 
 ```js
 var es = pda.watch(archive)
