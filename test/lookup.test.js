@@ -98,3 +98,30 @@ test(stat, '/subdir/bar', true)
 test(stat, 'baz', true)
 test(stat, '/baz', true)
 test(stat, 'notfound', false)
+
+// etc
+// =
+
+test('files have metadata, folders have no metadata', async t => {
+  target = await tutil.createArchive([
+    '/foo',
+    '/subdir/',
+    '/subdir/bar',
+    '/baz'
+  ])
+
+  var st = await pda.stat(target, '/foo')
+  t.is(st.isDirectory(), false)
+  t.is(st.isFile(), true)
+  t.truthy(st.downloaded > 0)
+  t.truthy(st.blocks > 0)
+  t.truthy(st.size > 0)
+
+  var st = await pda.stat(target, '/subdir')
+  t.is(st.isDirectory(), true)
+  t.is(st.isFile(), false)
+  t.is(st.downloaded, 0)
+  t.is(st.blocks, 0)
+  t.is(st.size, 0)
+})
+
