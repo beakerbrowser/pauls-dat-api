@@ -86,6 +86,12 @@ test('copy', async t => {
   t.deepEqual(await pda.readFile(archive, 'c/a'), 'content')
   t.deepEqual(await pda.readFile(archive, 'c/b'), 'content')
   t.deepEqual(await pda.readFile(archive, 'c/c'), 'content')
+
+  const err1 = await t.throws(pda.copy(archive, '/b', '/b/sub'))
+  t.truthy(err1.invalidPath)
+
+  const err2 = await t.throws(pda.copy(archive, '/b', '/b'))
+  t.truthy(err2.invalidPath)
 })
 
 test('copy w/fs', async t => {
@@ -119,6 +125,7 @@ test('copy w/fs', async t => {
   t.deepEqual(await pda.readFile(fs, 'c/a'), 'content')
   t.deepEqual(await pda.readFile(fs, 'c/b'), 'content')
   t.deepEqual(await pda.readFile(fs, 'c/c'), 'content')
+
 })
 
 test('rename', async t => {
@@ -152,6 +159,9 @@ test('rename', async t => {
   t.deepEqual(await pda.readFile(archive, 'c/newb/a'), 'content')
   t.deepEqual(await pda.readFile(archive, 'c/newb/b'), 'content')
   t.deepEqual(await pda.readFile(archive, 'c/newb/c'), 'content')
+
+  const err1 = await t.throws(pda.rename(archive, '/b-rename', '/b-rename/sub'))
+  t.truthy(err1.invalidPath)
 })
 
 test('rename w/fs', async t => {
@@ -312,14 +322,8 @@ test('ParentFolderDoesntExistError', async t => {
   const err5 = await t.throws(pda.copy(archive, '/foo', '/bar/foo'))
   t.truthy(err5.parentFolderDoesntExist)
 
-  const err6 = await t.throws(pda.copy(archive, '/foo', '/foo/bar'))
+  const err6 = await t.throws(pda.rename(archive, '/foo', '/bar/foo'))
   t.truthy(err6.parentFolderDoesntExist)
-
-  const err7 = await t.throws(pda.rename(archive, '/foo', '/bar/foo'))
-  t.truthy(err7.parentFolderDoesntExist)
-
-  const err8 = await t.throws(pda.rename(archive, '/foo', '/foo/bar'))
-  t.truthy(err8.parentFolderDoesntExist)
 })
 
 test('ParentFolderDoesntExistError w/fs', async t => {
@@ -342,12 +346,6 @@ test('ParentFolderDoesntExistError w/fs', async t => {
   const err5 = await t.throws(pda.copy(fs, '/foo', '/bar/foo'))
   t.truthy(err5.parentFolderDoesntExist)
 
-  const err6 = await t.throws(pda.copy(fs, '/foo', '/foo/bar'))
+  const err6 = await t.throws(pda.rename(fs, '/foo', '/bar/foo'))
   t.truthy(err6.parentFolderDoesntExist)
-
-  const err7 = await t.throws(pda.rename(fs, '/foo', '/bar/foo'))
-  t.truthy(err7.parentFolderDoesntExist)
-
-  const err8 = await t.throws(pda.rename(fs, '/foo', '/foo/bar'))
-  t.truthy(err8.parentFolderDoesntExist)
 })
