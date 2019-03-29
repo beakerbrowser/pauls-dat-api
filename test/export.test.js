@@ -15,6 +15,26 @@ test('exportFilesystemToArchive', async t => {
   const dstArchive = await tutil.createArchive()
   await new Promise(resolve => dstArchive.ready(resolve))
 
+  // initial import (dry run)
+  // =
+
+  const statsADry = await pda.exportFilesystemToArchive({
+    srcPath,
+    dstArchive,
+    inplaceImport: true,
+    dryRun: true
+  })
+  var expectedAddedADry = ['/foo.txt', '/bar.data', '/subdir/foo.txt', '/subdir/bar.data']
+  statsADry.addedFiles.sort(); expectedAddedADry.sort()
+  t.deepEqual(statsADry.addedFiles.map(tutil.tonix), expectedAddedADry)
+  t.deepEqual(statsADry.updatedFiles, [])
+  t.deepEqual(statsADry.removedFiles, [])
+  t.deepEqual(statsADry.addedFolders.map(tutil.tonix), ['/subdir'])
+  t.deepEqual(statsADry.removedFolders, [])
+  t.deepEqual(statsADry.skipCount, 0)
+  t.deepEqual(statsADry.fileCount, 4)
+  t.deepEqual(await pda.readdir(dstArchive, '/'), [])
+
   // initial import
   // =
 
@@ -26,7 +46,10 @@ test('exportFilesystemToArchive', async t => {
   var expectedAddedA = ['/foo.txt', '/bar.data', '/subdir/foo.txt', '/subdir/bar.data']
   statsA.addedFiles.sort(); expectedAddedA.sort()
   t.deepEqual(statsA.addedFiles.map(tutil.tonix), expectedAddedA)
-  t.deepEqual(statsA.updatedFiles, [])
+  t.deepEqual(statsADry.updatedFiles, [])
+  t.deepEqual(statsADry.removedFiles, [])
+  t.deepEqual(statsADry.addedFolders.map(tutil.tonix), ['/subdir'])
+  t.deepEqual(statsADry.removedFolders, [])
   t.deepEqual(statsA.skipCount, 0)
   t.deepEqual(statsA.fileCount, 4)
 
@@ -52,6 +75,26 @@ test('exportFilesystemToArchive', async t => {
   fs.mkdirSync(path.join(srcPath, 'subdir2'))
   fs.writeFileSync(path.join(srcPath, 'subdir2', 'foo.txt'), 'content')
 
+  // 2 changes, 2 additions (dry run)
+  // =
+
+  const statsDDry = await pda.exportFilesystemToArchive({
+    srcPath,
+    dstArchive,
+    inplaceImport: true,
+    dryRun: true
+  })
+  var expectedAddedDDry = ['/subdir2/foo.txt']
+  statsDDry.addedFiles.sort(); expectedAddedDDry.sort()
+  t.deepEqual(statsDDry.addedFiles.map(tutil.tonix), expectedAddedDDry)
+  var expectedUpdatedD = ['/bar.data', '/foo.txt', '/subdir/bar.data', '/subdir/foo.txt']
+  statsDDry.updatedFiles.sort(); expectedUpdatedD.sort()
+  t.deepEqual(statsDDry.updatedFiles.map(tutil.tonix), expectedUpdatedD)
+  t.deepEqual(statsDDry.addedFolders.map(tutil.tonix), ['/subdir2'])
+  t.deepEqual(statsDDry.skipCount, 0)
+  t.deepEqual(statsDDry.fileCount, 5)
+  t.deepEqual((await pda.readdir(dstArchive, '/')).length, 3)
+
   // 2 changes, 2 additions
   // =
 
@@ -66,6 +109,7 @@ test('exportFilesystemToArchive', async t => {
   var expectedUpdatedD = ['/bar.data', '/foo.txt', '/subdir/bar.data', '/subdir/foo.txt']
   statsD.updatedFiles.sort(); expectedUpdatedD.sort()
   t.deepEqual(statsD.updatedFiles.map(tutil.tonix), expectedUpdatedD)
+  t.deepEqual(statsD.addedFolders.map(tutil.tonix), ['/subdir2'])
   t.deepEqual(statsD.skipCount, 0)
   t.deepEqual(statsD.fileCount, 5)
 

@@ -345,6 +345,7 @@ events.on('sync', args => {
  - `opts.dstPath` Destination path within the archive. Optional, defaults to '/'.
  - `opts.ignore` Files not to copy (array of strings). Optional. Uses [anymatch](npm.im/anymatch).
  - `opts.inplaceImport` Should import source directory in-place? (boolean). If true and importing a directory, this will cause the directory's content to be copied directy into the `dstPath`. If false, will cause the source-directory to become a child of the `dstPath`.
+ - `opts.dryRun` Don't actually make changes, just list what changes will occur. Optional, defaults to `false`.
  - Returns stats on the export.
 
 Copies a file-tree into an archive.
@@ -358,6 +359,9 @@ var stats = await pda.exportFilesystemToArchive({
 console.log(stats) /* => {
   addedFiles: ['fuzz.txt', 'foo/bar.txt'],
   updatedFiles: ['something.txt'],
+  removedFiles: [],
+  addedFolders: ['foo'],
+  removedFolders: [],
   skipCount: 3, // files skipped due to the target already existing
   fileCount: 3,
   totalSize: 400 // bytes
